@@ -15,15 +15,12 @@
 
 // const balance = 1000;
 
-// if(balance < 500){
-//     console.log("Balance less than 500");
-// }
-// else if(balance < 750){
-//     console.log("Balance less than 750");
-// }
-// else{
-//     console.log("Balance less than 1200");
-// }
+if(balance < 500){
+    console.log("Balance less than 500");
+}
+else(balance < 750){
+    console.log("Balance less than 750");
+
 
 // and , or operator
 

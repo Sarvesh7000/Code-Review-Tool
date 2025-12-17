@@ -2,6 +2,10 @@
 
 This project provides automated code review tools to enforce coding standards and best practices across multiple programming languages.
 
+$ python semgrep-task/header-validator.py semgrep-task/code/
+
+semgrep --config semgrep-task/rules/coding-rules.yml semgrep-task/code/test.go
+
 ## 📁 Project Structure
 
 ```

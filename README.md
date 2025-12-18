@@ -6,6 +6,10 @@ $ python semgrep-task/header-validator.py semgrep-task/code/
 
 semgrep --config semgrep-task/rules/coding-rules.yml semgrep-task/code/test.go
 
+semgrep --config semgrep-task/rules/coding-rules.yml semgrep-task/code/ --json -o semgrep-report.json
+
+semgrep --config semgrep-task/rules/coding-rules.yml semgrep-task/code/test.js --severity ERROR --severity WARNING
+
 ## 📁 Project Structure
 
 ```

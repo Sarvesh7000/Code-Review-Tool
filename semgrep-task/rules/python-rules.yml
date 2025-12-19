@@ -1,0 +1,136 @@
+rules:
+  # ==========================================
+  # PYTHON SPECIFIC RULES
+  # ==========================================
+
+  # Empty Except Blocks
+  - id: python-empty-except
+    pattern: |
+      try:
+        ...
+      except:
+        pass
+    message: "Never ignore exceptions. Handle them properly with logging"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: error-handling
+
+  # Bare Except
+  - id: python-bare-except
+    pattern: |
+      try:
+        ...
+      except:
+        ...
+    message: "Avoid bare except. Catch specific exceptions"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: error-handling
+
+  # Print Statements
+  - id: python-print-statement
+    pattern: print(...)
+    message: "Avoid print statements in production. Use logging module"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: best-practice
+
+  # Mutable Default Argument
+  - id: python-mutable-default
+    pattern-either:
+      - pattern: |
+          def $FUNC($PARAM=[]):
+            ...
+      - pattern: |
+          def $FUNC($PARAM={}):
+            ...
+    message: "Mutable default arguments are dangerous. Use None and initialize inside function"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: best-practice
+
+  # Assert in production
+  - id: python-assert-usage
+    pattern: assert $COND
+    message: "Don't use assert for validation. Assertions can be disabled with -O flag"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: best-practice
+
+  # Weak Hashing
+  - id: python-weak-hash
+    pattern-either:
+      - pattern: hashlib.md5(...)
+      - pattern: hashlib.sha1(...)
+    message: "MD5 and SHA1 are cryptographically broken. Use SHA-256 or stronger"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-327
+
+  # Pickle Security
+  - id: python-pickle-unsafe
+    pattern: pickle.loads($DATA)
+    message: "pickle.loads() can execute arbitrary code. Never unpickle untrusted data"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-502
+
+  # Shell Injection
+  - id: python-shell-injection
+    pattern: os.system($CMD)
+    message: "os.system() is vulnerable to shell injection. Use subprocess with shell=False"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-78
+
+  # Hardcoded Temp Path
+  - id: python-hardcoded-temp
+    pattern-either:
+      - pattern: open("/tmp/...")
+      - pattern: open("/var/tmp/...")
+    message: "Hardcoded temp paths are insecure. Use tempfile module"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+
+  # Requests without timeout
+  - id: python-requests-no-timeout
+    pattern: requests.$METHOD($URL)
+    message: "HTTP requests should have timeout to prevent hanging"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: reliability
+
+  # SQL Injection
+  - id: python-sql-injection
+    pattern: |
+      $CURSOR.execute("... " + $VAR + " ...")
+    message: "SQL injection vulnerability. Use parameterized queries"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-89
+
+  # Dangerous YAML load
+  - id: python-yaml-unsafe
+    pattern: yaml.load($DATA)
+    message: "yaml.load() can execute arbitrary code. Use yaml.safe_load()"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-502

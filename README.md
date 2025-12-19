@@ -14,7 +14,12 @@ python header-validator.py code/
 .
 $ semgrep --config=rules/coding-rules.yml code/test.js --severity=ERROR --severity=WARNING
 
-## 📁 Project Structure
+
+
+To automatically detect rules based on language command in vs code, just change code file name at end
+python semgrep-task/auto-review.py semgrep-task/code/test.js 
+
+## 📁 Project Structure old
 
 ```
 semgrep-task/
@@ -26,6 +31,26 @@ semgrep-task/
 ├── header-validator.py       # Python script to validate file headers
 └── README.md                 # This file
 ```
+
+## 📁 Project Structure new 
+
+C:\Users\apshe\Downloads\sample\CodeReview\
+├── auto-review.py          ← NEW FILE (Step 3)
+├── header-validator.py     ← Keep as is
+├── rules\                  ← NEW FOLDER (Step 1)
+│   ├── javascript-rules.yml    ← NEW FILE (Step 2)
+│   ├── python-rules.yml        ← NEW FILE (Step 2)
+│   ├── java-rules.yml          ← NEW FILE (Step 2)
+│   ├── go-rules.yml            ← NEW FILE (Step 2)
+│   └── common-rules.yml        ← NEW FILE (Step 2)
+└── semgrep-task\
+    └── code\               ← Your test files stay here
+        ├── test.js
+        ├── test.py
+        ├── test.java
+        └── test.go
+
+
 
 ## 🎯 Features
 

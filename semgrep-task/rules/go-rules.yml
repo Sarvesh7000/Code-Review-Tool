@@ -1,0 +1,140 @@
+rules:
+  # ==========================================
+  # GO (GOLANG) SPECIFIC RULES
+  # ==========================================
+
+  # Rule 1: Always Handle Errors Immediately
+  - id: go-rule-1-unhandled-error
+    pattern: |
+      $X, err := $FUNC(...)
+    message: "Rule 1: Always handle errors immediately. Check if err != nil after assignment"
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: error-handling
+      rule: "Go Rule 1"
+
+  # Rule 3: Avoid panic in Application Code
+  - id: go-rule-3-avoid-panic
+    pattern: panic($X)
+    message: "Rule 3: Avoid using panic in application code. Return errors instead"
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: error-handling
+      rule: "Go Rule 3"
+
+  # Rule 6: Avoid Global Variables
+  - id: go-rule-6-global-var
+    pattern: var $GLOBAL $TYPE
+    message: "Rule 6: Avoid global variables. Use dependency injection or structs"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Go Rule 6"
+
+  # Rule 8: Do Not Use defer Inside Loops
+  - id: go-rule-8-defer-in-loop
+    pattern: |
+      for ... {
+        defer $FUNC(...)
+      }
+    message: "Rule 8: Do not use defer inside loops. Move defer outside or use a function"
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: resource-management
+      rule: "Go Rule 8"
+
+  # Rule 10: Avoid Goroutine Leaks
+  - id: go-rule-10-goroutine-leak
+    pattern: |
+      go func() {
+        ...
+      }()
+    message: "Rule 10: Ensure goroutines can exit. Use context or done channels"
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: concurrency
+      rule: "Go Rule 10"
+
+  # Rule 12: Avoid Empty Interface
+  - id: go-rule-12-empty-interface
+    pattern: func $FUNC($PARAM interface{})
+    message: "Rule 12: Avoid empty interface (interface{}). Use specific types or generics"
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: type-safety
+      rule: "Go Rule 12"
+
+  # Rule 13: Use Channels Safely
+  - id: go-rule-13-unclosed-channel
+    pattern: |
+      $CH := make(chan $TYPE)
+    message: "Rule 13: Ensure channels are properly closed to avoid goroutine leaks"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: concurrency
+      rule: "Go Rule 13"
+
+  # Rule 14: Avoid time.After in Loops
+  - id: go-rule-14-time-after-leak
+    pattern: |
+      for ... {
+        <-time.After(...)
+      }
+    message: "Rule 14: Avoid time.After in loops. Use time.NewTicker instead"
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: memory-leak
+      rule: "Go Rule 14"
+
+  # Rule 15: Use crypto/rand for Security
+  - id: go-rule-15-weak-random
+    pattern: rand.Read(...)
+    message: "Rule 15: Use crypto/rand for security-sensitive random numbers, not math/rand"
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: security
+      rule: "Go Rule 15"
+
+  # Rule 19: Avoid SQL String Concatenation
+  - id: go-rule-19-sql-injection
+    pattern: $DB.Query("... " + $VAR + " ...")
+    message: "Rule 19: Avoid SQL string concatenation. Use parameterized queries"
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-89
+      rule: "Go Rule 19"
+
+  # Rule 18: Keep Functions Small and Focused
+  - id: go-rule-18-long-function
+    pattern: |
+      func $FUNC(...) ... {
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+      }
+    message: "Rule 18: Keep functions small and focused. Break down large functions"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: code-quality
+      rule: "Go Rule 18"

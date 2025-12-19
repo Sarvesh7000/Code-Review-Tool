@@ -1,0 +1,123 @@
+rules:
+  # ==========================================
+  # COMMON RULES (ALL LANGUAGES)
+  # ==========================================
+  # Security and code quality rules that apply across languages
+
+  # SQL Injection
+  - id: sql-injection-risk
+    pattern-either:
+      - pattern: $DB.execute("... " + $VAR + " ...")
+      - pattern: $DB.query("... " + $VAR + " ...")
+    message: "Potential SQL injection vulnerability. Use parameterized queries"
+    languages: [javascript, typescript, python, java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-89
+
+  # Eval Usage
+  - id: dangerous-eval
+    pattern: eval($X)
+    message: "Avoid using eval(). It can execute arbitrary code and is a security risk"
+    languages: [javascript, typescript, python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-95
+
+  # Hardcoded Secret Token
+  - id: hardcoded-token
+    pattern-either:
+      - pattern: $TOKEN = "sk_live_..."
+      - pattern: $TOKEN = "ghp_..."
+      - pattern: $SECRET = "-----BEGIN PRIVATE KEY-----"
+    message: "Hardcoded secret token detected. Use environment variables or secret management"
+    languages: [javascript, typescript, python, java, go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-798
+
+  # Duplicate Code
+  - id: duplicate-if-conditions
+    pattern: |
+      if ($COND) {
+        $BODY
+      }
+      ...
+      if ($COND) {
+        $BODY
+      }
+    message: "Duplicate code detected. Follow DRY principle"
+    languages: [javascript, typescript, java, go]
+    severity: INFO
+    metadata:
+      category: code-quality
+
+  # Missing Input Validation
+  - id: missing-input-validation
+    pattern: |
+      function $FUNC($PARAM) {
+        $DB.save($PARAM);
+      }
+    message: "Missing input validation. Validate parameters before using them"
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+
+  # Unvalidated Redirect
+  - id: unvalidated-redirect
+    pattern-either:
+      - pattern: window.location = $URL
+      - pattern: window.location.href = $URL
+    message: "Unvalidated redirect can lead to phishing attacks. Validate URL first"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-601
+
+  # Weak Crypto
+  - id: weak-crypto-md5
+    pattern-either:
+      - pattern: crypto.createHash("md5")
+      - pattern: crypto.createHash('md5')
+    message: "MD5 is cryptographically broken. Use SHA-256 or stronger"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-327
+
+  # Insecure Random
+  - id: insecure-random
+    pattern: Math.random()
+    message: "Math.random() is not cryptographically secure. Use crypto.randomBytes()"
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+
+  # DOM XSS
+  - id: dom-xss-innerhtml
+    pattern: $EL.innerHTML = $VAR
+    message: "Setting innerHTML with user input can cause XSS. Use textContent or sanitize input"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-79
+
+  # Prototype Pollution
+  - id: prototype-pollution
+    pattern-either:
+      - pattern: $OBJ["__proto__"] = ...
+      - pattern: $OBJ.constructor.prototype = ...
+    message: "Prototype pollution vulnerability detected"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-1321

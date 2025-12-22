@@ -17,7 +17,13 @@ $ semgrep --config=rules/coding-rules.yml code/test.js --severity=ERROR --severi
 
 
 To automatically detect rules based on language command in vs code, just change code file name at end
+
 python semgrep-task/auto-review.py semgrep-task/code/test.js 
+
+
+To check header-validation.py file
+
+python semgrep-task/header-validator.py semgrep-task/code/
 
 ## 📁 Project Structure old
 

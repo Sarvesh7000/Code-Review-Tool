@@ -1,45 +1,70 @@
 rules:
   # ==========================================
-  # PYTHON SPECIFIC RULES
+  # PYTHON SPECIFIC RULES - COMPLETE
   # ==========================================
 
-  # Empty Except Blocks
-  - id: python-empty-except
+  # ==========================================
+  # ERROR HANDLING RULES
+  # ==========================================
+
+  # Rule 1: Empty Except Blocks
+  - id: python-rule-1-empty-except
     pattern: |
       try:
         ...
       except:
         pass
-    message: "Never ignore exceptions. Handle them properly with logging"
+    message: "Rule 1: Never ignore exceptions. Handle them properly with logging"
     languages: [python]
     severity: ERROR
     metadata:
       category: error-handling
+      rule: "Python Rule 1"
 
-  # Bare Except
-  - id: python-bare-except
+  # Rule 2: Bare Except
+  - id: python-rule-2-bare-except
     pattern: |
       try:
         ...
       except:
         ...
-    message: "Avoid bare except. Catch specific exceptions"
+    message: "Rule 2: Avoid bare except. Catch specific exceptions (e.g., except ValueError:)"
     languages: [python]
     severity: WARNING
     metadata:
       category: error-handling
+      rule: "Python Rule 2"
 
-  # Print Statements
-  - id: python-print-statement
+  # Rule 3: Catching Too Broad Exception
+  - id: python-rule-3-broad-exception
+    pattern: |
+      try:
+        ...
+      except Exception:
+        ...
+    message: "Rule 3: Avoid catching Exception. Catch specific exceptions for better error handling"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: error-handling
+      rule: "Python Rule 3"
+
+  # ==========================================
+  # BEST PRACTICES
+  # ==========================================
+
+  # Rule 4: Print Statements
+  - id: python-rule-4-print-statement
     pattern: print(...)
-    message: "Avoid print statements in production. Use logging module"
+    message: "Rule 4: Avoid print statements in production. Use logging module"
     languages: [python]
     severity: INFO
     metadata:
       category: best-practice
+      rule: "Python Rule 4"
 
-  # Mutable Default Argument
-  - id: python-mutable-default
+  # Rule 5: Mutable Default Argument
+  - id: python-rule-5-mutable-default
     pattern-either:
       - pattern: |
           def $FUNC($PARAM=[]):
@@ -47,90 +72,469 @@ rules:
       - pattern: |
           def $FUNC($PARAM={}):
             ...
-    message: "Mutable default arguments are dangerous. Use None and initialize inside function"
+    message: "Rule 5: Mutable default arguments are dangerous. Use None and initialize inside function"
     languages: [python]
     severity: ERROR
     metadata:
       category: best-practice
+      rule: "Python Rule 5"
 
-  # Assert in production
-  - id: python-assert-usage
+  # Rule 6: Assert in Production
+  - id: python-rule-6-assert-usage
     pattern: assert $COND
-    message: "Don't use assert for validation. Assertions can be disabled with -O flag"
+    message: "Rule 6: Don't use assert for validation. Assertions can be disabled with -O flag"
     languages: [python]
     severity: WARNING
     metadata:
       category: best-practice
+      rule: "Python Rule 6"
 
-  # Weak Hashing
-  - id: python-weak-hash
+  # ==========================================
+  # SECURITY RULES
+  # ==========================================
+
+  # Rule 7: Weak Hashing
+  - id: python-rule-7-weak-hash
     pattern-either:
       - pattern: hashlib.md5(...)
       - pattern: hashlib.sha1(...)
-    message: "MD5 and SHA1 are cryptographically broken. Use SHA-256 or stronger"
+    message: "Rule 7: MD5 and SHA1 are cryptographically broken. Use SHA-256 or stronger"
     languages: [python]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-327
+      rule: "Python Rule 7"
 
-  # Pickle Security
-  - id: python-pickle-unsafe
+  # Rule 8: Pickle Security
+  - id: python-rule-8-pickle-unsafe
     pattern: pickle.loads($DATA)
-    message: "pickle.loads() can execute arbitrary code. Never unpickle untrusted data"
+    message: "Rule 8: pickle.loads() can execute arbitrary code. Never unpickle untrusted data"
     languages: [python]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-502
+      rule: "Python Rule 8"
 
-  # Shell Injection
-  - id: python-shell-injection
+  # Rule 9: Shell Injection
+  - id: python-rule-9-shell-injection
     pattern: os.system($CMD)
-    message: "os.system() is vulnerable to shell injection. Use subprocess with shell=False"
+    message: "Rule 9: os.system() is vulnerable to shell injection. Use subprocess with shell=False"
     languages: [python]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-78
+      rule: "Python Rule 9"
 
-  # Hardcoded Temp Path
-  - id: python-hardcoded-temp
+  # Rule 10: Hardcoded Temp Path
+  - id: python-rule-10-hardcoded-temp
     pattern-either:
       - pattern: open("/tmp/...")
       - pattern: open("/var/tmp/...")
-    message: "Hardcoded temp paths are insecure. Use tempfile module"
+    message: "Rule 10: Hardcoded temp paths are insecure. Use tempfile module"
     languages: [python]
     severity: WARNING
     metadata:
       category: security
+      rule: "Python Rule 10"
 
-  # Requests without timeout
-  - id: python-requests-no-timeout
+  # Rule 11: Requests Without Timeout
+  - id: python-rule-11-requests-no-timeout
     pattern: requests.$METHOD($URL)
-    message: "HTTP requests should have timeout to prevent hanging"
+    message: "Rule 11: HTTP requests should have timeout to prevent hanging"
     languages: [python]
     severity: WARNING
     metadata:
       category: reliability
+      rule: "Python Rule 11"
 
-  # SQL Injection
-  - id: python-sql-injection
+  # Rule 12: SQL Injection
+  - id: python-rule-12-sql-injection
     pattern: |
       $CURSOR.execute("... " + $VAR + " ...")
-    message: "SQL injection vulnerability. Use parameterized queries"
+    message: "Rule 12: SQL injection vulnerability. Use parameterized queries"
     languages: [python]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-89
+      rule: "Python Rule 12"
 
-  # Dangerous YAML load
-  - id: python-yaml-unsafe
+  # Rule 13: Dangerous YAML Load
+  - id: python-rule-13-yaml-unsafe
     pattern: yaml.load($DATA)
-    message: "yaml.load() can execute arbitrary code. Use yaml.safe_load()"
+    message: "Rule 13: yaml.load() can execute arbitrary code. Use yaml.safe_load()"
     languages: [python]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-502
+      rule: "Python Rule 13"
+
+  # Rule 14: Eval Usage
+  - id: python-rule-14-eval-usage
+    pattern: eval($EXPR)
+    message: "Rule 14: eval() is dangerous. Never use eval() with untrusted input"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-95
+      rule: "Python Rule 14"
+
+  # Rule 15: Hardcoded Secrets
+  - id: python-rule-15-hardcoded-secrets
+    pattern-either:
+      - pattern: $PASSWORD = "..."
+      - pattern: $API_KEY = "..."
+      - pattern: $SECRET = "..."
+      - pattern: $TOKEN = "sk_live_..."
+      - pattern: $TOKEN = "ghp_..."
+    message: "Rule 15: Do not hard-code secrets. Use environment variables (os.getenv)"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-798
+      rule: "Python Rule 15"
+
+  # ==========================================
+  # NAMING CONVENTION RULES (PEP 8)
+  # ==========================================
+
+  # Rule 16: Function Names Should Use snake_case
+  - id: python-rule-16-function-naming
+    pattern: |
+      def $FunctionName(...):
+        ...
+    message: "Rule 16: Function names should use snake_case (e.g., get_user_data, calculate_total)"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Python Rule 16"
+
+  # Rule 17: Class Names Should Use PascalCase
+  - id: python-rule-17-class-naming
+    pattern: |
+      class $class_name:
+        ...
+    message: "Rule 17: Class names should use PascalCase (e.g., UserService, DatabaseConnection)"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Python Rule 17"
+
+  # Rule 18: Constants Should Use UPPER_CASE
+  - id: python-rule-18-constant-naming
+    pattern: $camelCase = $VALUE
+    message: "Rule 18: Constants should use UPPER_CASE (e.g., MAX_SIZE, API_URL)"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Python Rule 18"
+
+  # Rule 19: Variable Names Should Use snake_case
+  - id: python-rule-19-variable-naming
+    pattern: $CamelCase = ...
+    message: "Rule 19: Variable names should use snake_case (e.g., user_name, total_count)"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Python Rule 19"
+
+  # Rule 20: Boolean Variables Should Be Descriptive
+  - id: python-rule-20-boolean-naming
+    pattern-either:
+      - pattern: $active = True
+      - pattern: $valid = False
+      - pattern: $flag = True
+    message: "Rule 20: Boolean variables should be descriptive (e.g., is_active, has_permission, can_edit)"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Python Rule 20"
+
+  # ==========================================
+  # CODE QUALITY RULES
+  # ==========================================
+
+  # Rule 21: Function Length
+  - id: python-rule-21-long-function
+    pattern: |
+      def $FUNC(...):
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+    message: "Rule 21: Function is too long (>50 lines). Break it into smaller functions"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: code-quality
+      rule: "Python Rule 21"
+
+  # Rule 22: Nested Code Depth
+  - id: python-rule-22-nested-depth
+    pattern: |
+      if $COND1:
+        if $COND2:
+          if $COND3:
+            if $COND4:
+              ...
+    message: "Rule 22: Code is too deeply nested (>3 levels). Use early returns or extract functions"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: code-quality
+      rule: "Python Rule 22"
+
+  # Rule 23: Unused Imports
+  - id: python-rule-23-unused-import
+    pattern: import $MODULE
+    message: "Rule 23: Remove unused imports to keep code clean"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: code-quality
+      rule: "Python Rule 23"
+
+  # Rule 24: Star Imports
+  - id: python-rule-24-star-import
+    pattern: from $MODULE import *
+    message: "Rule 24: Avoid star imports (from x import *). Import specific items for clarity"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: best-practice
+      rule: "Python Rule 24"
+
+  # ==========================================
+  # INPUT VALIDATION RULES
+  # ==========================================
+
+  # Rule 25: Missing Input Validation
+  - id: python-rule-25-missing-validation
+    pattern: |
+      def $FUNC($PARAM):
+        $DB.save($PARAM)
+    message: "Rule 25: Validate input parameters before using them. Check for None and invalid values"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      rule: "Python Rule 25"
+
+  # Rule 26: Check for None
+  - id: python-rule-26-none-check
+    pattern: |
+      def $FUNC($PARAM):
+        $PARAM.$METHOD(...)
+    message: "Rule 26: Check for None before accessing attributes to prevent AttributeError"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: error-handling
+      rule: "Python Rule 26"
+
+  # Rule 27: List Index Validation
+  - id: python-rule-27-list-index
+    pattern: $LIST[$INDEX]
+    message: "Rule 27: Validate list indices to prevent IndexError"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: error-handling
+      rule: "Python Rule 27"
+
+  # ==========================================
+  # DOCUMENTATION RULES
+  # ==========================================
+
+  # Rule 28: Missing Docstrings
+  - id: python-rule-28-missing-docstring
+    pattern: |
+      def $FUNC(...):
+        ...
+        ...
+        ...
+    message: "Rule 28: Functions should have docstrings describing purpose, parameters, and return value"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: documentation
+      rule: "Python Rule 28"
+
+  # Rule 29: Class Docstrings
+  - id: python-rule-29-class-docstring
+    pattern: |
+      class $CLASS:
+        ...
+    message: "Rule 29: Classes should have docstrings describing their purpose and usage"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: documentation
+      rule: "Python Rule 29"
+
+  # Rule 30: Module Docstrings
+  - id: python-rule-30-module-docstring
+    pattern: |
+      import $MODULE
+    message: "Rule 30: Modules should start with a docstring describing their purpose"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: documentation
+      rule: "Python Rule 30"
+
+  # ==========================================
+  # PERFORMANCE RULES
+  # ==========================================
+
+  # Rule 31: String Concatenation in Loops
+  - id: python-rule-31-string-concat-loop
+    pattern: |
+      for $VAR in $ITER:
+        $STR = $STR + $X
+    message: "Rule 31: Avoid string concatenation in loops. Use list and join() for better performance"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: performance
+      rule: "Python Rule 31"
+
+  # Rule 32: List Comprehension
+  - id: python-rule-32-list-comprehension
+    pattern: |
+      for $VAR in $ITER:
+        $LIST.append($EXPR)
+    message: "Rule 32: Consider using list comprehension for better performance and readability"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: performance
+      rule: "Python Rule 32"
+
+  # ==========================================
+  # PYTHONIC PATTERNS
+  # ==========================================
+
+  # Rule 33: Use Context Managers
+  - id: python-rule-33-context-manager
+    pattern: |
+      $FILE = open($PATH)
+      ...
+      $FILE.close()
+    message: "Rule 33: Use 'with' statement (context manager) to ensure file is closed"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: best-practice
+      rule: "Python Rule 33"
+
+  # Rule 34: Use enumerate Instead of range(len())
+  - id: python-rule-34-enumerate
+    pattern: |
+      for i in range(len($LIST)):
+        $ITEM = $LIST[i]
+    message: "Rule 34: Use enumerate() instead of range(len()) for cleaner code"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Python Rule 34"
+
+  # Rule 35: Use isinstance Instead of type()
+  - id: python-rule-35-isinstance
+    pattern: type($VAR) == $TYPE
+    message: "Rule 35: Use isinstance() instead of type() for type checking"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Python Rule 35"
+
+  # ==========================================
+  # TYPE HINTS (Python 3.5+)
+  # ==========================================
+
+  # Rule 36: Missing Type Hints
+  - id: python-rule-36-missing-type-hints
+    pattern: |
+      def $FUNC($PARAM):
+        ...
+    message: "Rule 36: Consider adding type hints for better code documentation and IDE support"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Python Rule 36"
+
+  # Rule 37: Return Type Hints
+  - id: python-rule-37-return-type-hints
+    pattern: |
+      def $FUNC(...) -> None:
+        return $VALUE
+    message: "Rule 37: Function returns a value but type hint is None. Fix type hint"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: type-hints
+      rule: "Python Rule 37"
+
+  # ==========================================
+  # COMPARISON & LOGIC
+  # ==========================================
+
+  # Rule 38: Comparing to True/False/None
+  - id: python-rule-38-comparison-to-literal
+    pattern-either:
+      - pattern: if $VAR == True
+      - pattern: if $VAR == False
+      - pattern: if $VAR == None
+    message: "Rule 38: Use 'if var:', 'if not var:', or 'if var is None:' instead of explicit comparison"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Python Rule 38"
+
+  # Rule 39: Use 'is' for None Comparison
+  - id: python-rule-39-none-comparison
+    pattern: if $VAR == None
+    message: "Rule 39: Use 'is None' instead of '== None' for None comparison"
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: best-practice
+      rule: "Python Rule 39"
+
+  # Rule 40: Empty Sequence Check
+  - id: python-rule-40-empty-sequence
+    pattern-either:
+      - pattern: if len($SEQ) == 0
+      - pattern: if len($SEQ) > 0
+    message: "Rule 40: Use 'if not seq:' or 'if seq:' instead of checking len()"
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Python Rule 40"

@@ -1,8 +1,12 @@
 rules:
   # ==========================================
-  # JAVASCRIPT/TYPESCRIPT SPECIFIC RULES
+  # JAVASCRIPT/TYPESCRIPT SPECIFIC RULES - COMPLETE
   # ==========================================
-  
+
+  # ==========================================
+  # BASIC SYNTAX & BEST PRACTICES
+  # ==========================================
+
   # Rule 1: Use Strict Equality
   - id: js-rule-1-strict-equality-check
     pattern-either:
@@ -48,6 +52,22 @@ rules:
       category: best-practice
       rule: "JS Rule 3"
 
+  # Rule 4: Use Meaningful Variable Names
+  - id: js-rule-4-meaningful-names
+    pattern-either:
+      - pattern: const $X = ...
+      - pattern: let $X = ...
+    message: "Rule 4: Use meaningful variable names. Avoid single-letter names except for loop counters (i, j, k)"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "JS Rule 4"
+
+  # ==========================================
+  # ERROR HANDLING RULES
+  # ==========================================
+
   # Rule 5: Always Handle Errors
   - id: js-rule-5-empty-catch
     pattern: |
@@ -61,6 +81,10 @@ rules:
     metadata:
       category: error-handling
       rule: "JS Rule 5"
+
+  # ==========================================
+  # ASYNC/PROMISE RULES
+  # ==========================================
 
   # Rule 6: Handle Promises Properly
   - id: js-rule-6-promise-without-catch
@@ -83,6 +107,10 @@ rules:
       category: async-patterns
       rule: "JS Rule 7"
 
+  # ==========================================
+  # LOGGING & DEBUGGING
+  # ==========================================
+
   # Rule 8: Avoid console.log in Production
   - id: js-rule-8-no-console-production
     pattern-either:
@@ -96,6 +124,24 @@ rules:
     metadata:
       category: best-practice
       rule: "JS Rule 8"
+
+  # Rule 9: Avoid Magic Numbers
+  - id: js-rule-9-magic-numbers
+    pattern-either:
+      - pattern: if ($VAR > 100) { ... }
+      - pattern: if ($VAR < 1000) { ... }
+      - pattern: if ($VAR >= 50) { ... }
+      - pattern: if ($VAR <= 200) { ... }
+    message: "Rule 9: Avoid magic numbers. Use named constants (e.g., const MAX_RETRIES = 3)"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "JS Rule 9"
+
+  # ==========================================
+  # SECURITY & INPUT VALIDATION
+  # ==========================================
 
   # Rule 10: Validate Inputs
   - id: js-rule-10-missing-validation
@@ -177,6 +223,35 @@ rules:
       category: async-patterns
       rule: "JS Rule 15"
 
+  # Rule 16: Avoid Floating Promises
+  # NOTE: DISABLED - Too many false positives
+  # - id: js-rule-16-floating-promise
+  #   pattern: $ASYNC_FUNC();
+  #   message: "Rule 16: Avoid floating promises. Use await or .catch() to handle errors properly"
+  #   languages: [javascript, typescript]
+  #   severity: WARNING
+
+  # Rule 17: Do Not Hard-Code Secrets
+  - id: js-rule-17-no-hardcoded-secrets
+    pattern-either:
+      - pattern: const $VAR = "sk_live_..."
+      - pattern: let $VAR = "sk_live_..."
+      - pattern: const $VAR = "sk_test_..."
+      - pattern: let $VAR = "sk_test_..."
+      - pattern: const $VAR = "ghp_..."
+      - pattern: let $VAR = "ghp_..."
+      - pattern: const $VAR = "gho_..."
+      - pattern: let $VAR = "gho_..."
+      - pattern: const $VAR = "AKIA..."
+      - pattern: let $VAR = "AKIA..."
+    message: "Rule 17: Do not hard-code secrets. Use environment variables (process.env.SECRET_NAME)"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-798
+      rule: "JS Rule 17"
+
   # Rule 18: Use Default Parameters
   - id: js-rule-18-default-params
     pattern: |
@@ -233,3 +308,283 @@ rules:
     metadata:
       category: code-quality
       rule: "JS Rule 20"
+
+  # ==========================================
+  # ADDITIONAL SECURITY RULES
+  # ==========================================
+
+  # Rule 21: Unvalidated Redirect
+  - id: js-rule-21-unvalidated-redirect
+    pattern-either:
+      - pattern: window.location = $URL
+      - pattern: window.location.href = $URL
+    message: "Rule 21: Unvalidated redirect can lead to phishing attacks. Validate URL first"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-601
+      rule: "JS Rule 21"
+
+  # Rule 22: Weak Crypto
+  - id: js-rule-22-weak-crypto-md5
+    pattern-either:
+      - pattern: crypto.createHash("md5")
+      - pattern: crypto.createHash('md5')
+    message: "Rule 22: MD5 is cryptographically broken. Use SHA-256 or stronger"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-327
+      rule: "JS Rule 22"
+
+  # Rule 23: Insecure Random
+  - id: js-rule-23-insecure-random
+    pattern: Math.random()
+    message: "Rule 23: Math.random() is not cryptographically secure. Use crypto.randomBytes()"
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: security
+      rule: "JS Rule 23"
+
+  # Rule 24: Prototype Pollution
+  - id: js-rule-24-prototype-pollution
+    pattern-either:
+      - pattern: $OBJ["__proto__"] = ...
+      - pattern: $OBJ.constructor.prototype = ...
+    message: "Rule 24: Prototype pollution vulnerability detected"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-1321
+      rule: "JS Rule 24"
+
+  # Rule 25: Command Injection
+  - id: js-rule-25-command-injection
+    pattern-either:
+      - pattern: exec("... " + $VAR + " ...")
+      - pattern: execSync("... " + $VAR + " ...")
+    message: "Rule 25: Command injection vulnerability. Never concatenate user input in shell commands"
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-78
+      rule: "JS Rule 25"
+
+  # ==========================================
+  # NAMING CONVENTION RULES
+  # ==========================================
+
+  # Rule 26: Variable Names Should Use camelCase
+  - id: js-rule-26-variable-naming
+    pattern-either:
+      - pattern: const $snake_case = ...
+      - pattern: let $snake_case = ...
+    message: "Rule 26: Variable names should use camelCase (e.g., userName, totalCount), not snake_case"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "JS Rule 26"
+
+  # Rule 27: Constants Should Use UPPER_CASE
+  - id: js-rule-27-constant-naming
+    pattern: const $camelCase = $VALUE
+    message: "Rule 27: Constants should use UPPER_CASE (e.g., MAX_SIZE, API_URL), not camelCase"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "JS Rule 27"
+
+  # Rule 28: Class Names Should Use PascalCase
+  - id: js-rule-28-class-naming
+    pattern: class $className { ... }
+    message: "Rule 28: Class names should use PascalCase (e.g., UserService, DatabaseConnection)"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "JS Rule 28"
+
+  # Rule 29: Function Names Should Be Verbs
+  - id: js-rule-29-function-naming
+    pattern: |
+      function user(...) {
+        ...
+      }
+    message: "Rule 29: Function names should start with a verb (e.g., getUser, calculateTotal, validateInput)"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "JS Rule 29"
+
+  # Rule 30: Boolean Variables Should Use is/has/should
+  - id: js-rule-30-boolean-naming
+    pattern-either:
+      - pattern: const active = true
+      - pattern: let active = false
+      - pattern: const valid = true
+      - pattern: let valid = false
+      - pattern: const enabled = true
+      - pattern: let enabled = false
+    message: "Rule 30: Boolean variables should start with is/has/should (e.g., isActive, hasPermission, shouldValidate)"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "JS Rule 30"
+
+  # ==========================================
+  # DOCUMENTATION RULES
+  # ==========================================
+
+  # Rule 31: Functions Should Have JSDoc Comments
+  - id: js-rule-31-missing-jsdoc
+    pattern: |
+      function $FUNC(...) {
+        ...
+        ...
+        ...
+      }
+    message: "Rule 31: Complex functions should have JSDoc comments describing purpose, parameters, and return value"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: documentation
+      rule: "JS Rule 31"
+
+  # Rule 32: Classes Should Have Documentation
+  - id: js-rule-32-class-documentation
+    pattern: |
+      class $CLASS {
+        ...
+      }
+    message: "Rule 32: Classes should have documentation describing their purpose and usage"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: documentation
+      rule: "JS Rule 32"
+
+  # ==========================================
+  # PERFORMANCE RULES
+  # ==========================================
+
+  # Rule 33: Multiple DOM Queries
+  - id: js-rule-33-multiple-dom-queries
+    pattern-either:
+      - pattern: |
+          document.getElementById($ID);
+          ...
+          document.getElementById($ID);
+      - pattern: |
+          document.querySelector($SEL);
+          ...
+          document.querySelector($SEL);
+    message: "Rule 33: Cache DOM queries. Store element reference in a variable to improve performance"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: performance
+      rule: "JS Rule 33"
+
+  # Rule 34: Inefficient Loop
+  - id: js-rule-34-inefficient-loop
+    pattern: |
+      for (...) {
+        $ARR.push($ITEM);
+      }
+    message: "Rule 34: Consider using array methods like map() or filter() for better performance and readability"
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: performance
+      rule: "JS Rule 34"
+
+  # ==========================================
+  # BEST PRACTICES
+  # ==========================================
+
+  # Rule 35: Callback Hell
+  - id: js-rule-35-callback-hell
+    pattern: |
+      $FUNC1(..., function(...) {
+        $FUNC2(..., function(...) {
+          $FUNC3(..., function(...) {
+            ...
+          });
+        });
+      });
+    message: "Rule 35: Avoid callback hell. Use Promises or async/await"
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: best-practice
+      rule: "JS Rule 35"
+
+  # Rule 36: Missing Return in Array Callback
+  - id: js-rule-36-missing-return-in-map
+    pattern: |
+      $ARR.map(($ITEM) => {
+        $BODY
+      })
+    message: "Rule 36: Array.map callback should return a value"
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: best-practice
+      rule: "JS Rule 36"
+
+  # Rule 37: Use Strict Mode
+  - id: js-rule-37-no-strict-mode
+    pattern: |
+      function $FUNC(...) {
+        ...
+      }
+    message: "Rule 37: Add 'use strict' at the top of JavaScript files for better error checking"
+    languages: [javascript]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "JS Rule 37"
+
+  # Rule 38: Unused Variables
+  - id: js-rule-38-unused-variable
+    pattern: |
+      let $VAR = $VALUE;
+      ...
+    message: "Rule 38: Variable declared but never used. Remove unused code"
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: code-quality
+      rule: "JS Rule 38"
+
+  # Rule 39: Global Variables
+  - id: js-rule-39-global-variable
+    pattern: |
+      var $GLOBAL = ...;
+    message: "Rule 39: Avoid global variables. Use modules or dependency injection"
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: best-practice
+      rule: "JS Rule 39"
+
+  # Rule 40: Empty Functions
+  - id: js-rule-40-empty-function
+    pattern: |
+      function $FUNC(...) {
+      }
+    message: "Rule 40: Empty function detected. Remove or implement it"
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: code-quality
+      rule: "JS Rule 40"

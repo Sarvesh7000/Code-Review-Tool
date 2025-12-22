@@ -1,6 +1,10 @@
 rules:
   # ==========================================
-  # GO (GOLANG) SPECIFIC RULES
+  # GO (GOLANG) SPECIFIC RULES - COMPLETE
+  # ==========================================
+
+  # ==========================================
+  # ERROR HANDLING RULES
   # ==========================================
 
   # Rule 1: Always Handle Errors Immediately
@@ -14,6 +18,16 @@ rules:
       category: error-handling
       rule: "Go Rule 1"
 
+  # Rule 2: Do Not Ignore Returned Errors
+  - id: go-rule-2-ignored-error
+    pattern: $FUNC(...)
+    message: "Rule 2: Do not ignore function errors. Check and handle them explicitly"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: error-handling
+      rule: "Go Rule 2"
+
   # Rule 3: Avoid panic in Application Code
   - id: go-rule-3-avoid-panic
     pattern: panic($X)
@@ -24,6 +38,34 @@ rules:
       category: error-handling
       rule: "Go Rule 3"
 
+  # ==========================================
+  # VARIABLE & FUNCTION RULES
+  # ==========================================
+
+  # Rule 4: Use Named Return Values Carefully
+  - id: go-rule-4-named-returns
+    pattern: |
+      func $FUNC(...) (... $NAME ...) {
+        ...
+        return
+      }
+    message: "Rule 4: Use named return values carefully. Ensure they improve clarity, not confusion"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Go Rule 4"
+
+  # Rule 5: Prefer Short Variable Declarations
+  - id: go-rule-5-var-declaration
+    pattern: var $VAR $TYPE = $VALUE
+    message: "Rule 5: Prefer short variable declarations (:=) inside functions for better readability"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Go Rule 5"
+
   # Rule 6: Avoid Global Variables
   - id: go-rule-6-global-var
     pattern: var $GLOBAL $TYPE
@@ -33,6 +75,21 @@ rules:
     metadata:
       category: best-practice
       rule: "Go Rule 6"
+
+  # ==========================================
+  # RESOURCE MANAGEMENT RULES
+  # ==========================================
+
+  # Rule 7: Always Close Resources
+  - id: go-rule-7-unclosed-resource
+    pattern: |
+      $RES, err := os.Open(...)
+    message: "Rule 7: Ensure resources are closed. Use defer file.Close() to ensure cleanup"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: resource-management
+      rule: "Go Rule 7"
 
   # Rule 8: Do Not Use defer Inside Loops
   - id: go-rule-8-defer-in-loop
@@ -47,6 +104,23 @@ rules:
       category: resource-management
       rule: "Go Rule 8"
 
+  # ==========================================
+  # CONCURRENCY RULES
+  # ==========================================
+
+  # Rule 9: Use Context for Cancellation
+  - id: go-rule-9-missing-context
+    pattern: |
+      func $FUNC(...) error {
+        ...
+      }
+    message: "Rule 9: Consider using context.Context for cancellation in long-running functions"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: concurrency
+      rule: "Go Rule 9"
+
   # Rule 10: Avoid Goroutine Leaks
   - id: go-rule-10-goroutine-leak
     pattern: |
@@ -60,10 +134,23 @@ rules:
       category: concurrency
       rule: "Go Rule 10"
 
+  # Rule 11: Prefer Interfaces Over Concrete Types
+  - id: go-rule-11-concrete-type-param
+    pattern: |
+      func $FUNC($PARAM *$TYPE) {
+        ...
+      }
+    message: "Rule 11: Consider using interfaces instead of concrete types for better testability"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Go Rule 11"
+
   # Rule 12: Avoid Empty Interface
   - id: go-rule-12-empty-interface
     pattern: func $FUNC($PARAM interface{})
-    message: "Rule 12: Avoid empty interface (interface{}). Use specific types or generics"
+    message: "Rule 12: Avoid empty interface (interface{}). Use specific types or generics (Go 1.18+)"
     languages: [go]
     severity: WARNING
     metadata:
@@ -87,12 +174,16 @@ rules:
       for ... {
         <-time.After(...)
       }
-    message: "Rule 14: Avoid time.After in loops. Use time.NewTicker instead"
+    message: "Rule 14: Avoid time.After in loops. Use time.NewTicker instead to prevent memory leaks"
     languages: [go]
     severity: ERROR
     metadata:
       category: memory-leak
       rule: "Go Rule 14"
+
+  # ==========================================
+  # SECURITY RULES
+  # ==========================================
 
   # Rule 15: Use crypto/rand for Security
   - id: go-rule-15-weak-random
@@ -104,16 +195,33 @@ rules:
       category: security
       rule: "Go Rule 15"
 
-  # Rule 19: Avoid SQL String Concatenation
-  - id: go-rule-19-sql-injection
-    pattern: $DB.Query("... " + $VAR + " ...")
-    message: "Rule 19: Avoid SQL string concatenation. Use parameterized queries"
+  # Rule 16: Avoid Hard-Coded Secrets
+  - id: go-rule-16-hardcoded-secrets
+    pattern-either:
+      - pattern: $VAR := "sk_live_..."
+      - pattern: $VAR := "ghp_..."
+      - pattern: $VAR := "AKIA..."
+      - pattern: const $VAR = "..."
+    message: "Rule 16: Do not hard-code secrets. Use environment variables (os.Getenv)"
     languages: [go]
     severity: ERROR
     metadata:
       category: security
-      cwe: CWE-89
-      rule: "Go Rule 19"
+      cwe: CWE-798
+      rule: "Go Rule 16"
+
+  # Rule 17: Use Struct Tags Correctly
+  - id: go-rule-17-missing-struct-tags
+    pattern: |
+      type $STRUCT struct {
+        $FIELD $TYPE
+      }
+    message: "Rule 17: Use struct tags for JSON/XML serialization (e.g., `json:\"field_name\"`)"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Go Rule 17"
 
   # Rule 18: Keep Functions Small and Focused
   - id: go-rule-18-long-function
@@ -132,9 +240,223 @@ rules:
         ...
         ...
       }
-    message: "Rule 18: Keep functions small and focused. Break down large functions"
+    message: "Rule 18: Keep functions small and focused. Break down large functions (max 50 lines)"
     languages: [go]
     severity: INFO
     metadata:
       category: code-quality
       rule: "Go Rule 18"
+
+  # Rule 19: Avoid SQL String Concatenation
+  - id: go-rule-19-sql-injection
+    pattern: $DB.Query("... " + $VAR + " ...")
+    message: "Rule 19: Avoid SQL string concatenation. Use parameterized queries to prevent injection"
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-89
+      rule: "Go Rule 19"
+
+  # Rule 20: Follow Go Formatting (gofmt)
+  # Note: This is enforced by gofmt tool, not Semgrep. Run: gofmt -w *.go
+
+  # ==========================================
+  # NAMING CONVENTION RULES
+  # ==========================================
+
+  # Rule 21: Exported Names Must Start with Capital Letter
+  - id: go-rule-21-exported-naming
+    pattern: |
+      func $name(...) {
+        ...
+      }
+    message: "Rule 21: Exported functions must start with uppercase (e.g., GetUser, not getUser)"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Go Rule 21"
+
+  # Rule 22: Use mixedCaps for Local Variables
+  - id: go-rule-22-variable-naming
+    pattern: $var_name := ...
+    message: "Rule 22: Use mixedCaps for variable names (e.g., userName), not snake_case"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Go Rule 22"
+
+  # Rule 23: Constants Should Use MixedCaps
+  - id: go-rule-23-constant-naming
+    pattern: const $VAR_NAME = ...
+    message: "Rule 23: Constants should use MixedCaps (e.g., MaxRetries), not UPPER_CASE"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Go Rule 23"
+
+  # Rule 24: Package Names Should Be Short and Lowercase
+  - id: go-rule-24-package-naming
+    pattern: package $PACKAGE_NAME
+    message: "Rule 24: Package names should be short, lowercase, single words (e.g., http, json)"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Go Rule 24"
+
+  # Rule 25: Interface Names Should End with 'er'
+  - id: go-rule-25-interface-naming
+    pattern: |
+      type $NAME interface {
+        ...
+      }
+    message: "Rule 25: Interface names should describe behavior and often end with 'er' (e.g., Reader, Writer)"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Go Rule 25"
+
+  # ==========================================
+  # DOCUMENTATION RULES
+  # ==========================================
+
+  # Rule 26: Exported Functions Must Have Comments
+  - id: go-rule-26-exported-function-doc
+    pattern: |
+      func $FUNC(...) {
+        ...
+      }
+    message: "Rule 26: Exported functions should have comments starting with function name (e.g., // GetUser retrieves...)"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: documentation
+      rule: "Go Rule 26"
+
+  # Rule 27: Package Should Have Package Comment
+  - id: go-rule-27-package-doc
+    pattern: package $PKG
+    message: "Rule 27: Packages should have a package comment describing their purpose"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: documentation
+      rule: "Go Rule 27"
+
+  # ==========================================
+  # INPUT VALIDATION RULES
+  # ==========================================
+
+  # Rule 28: Validate Function Parameters
+  - id: go-rule-28-missing-validation
+    pattern: |
+      func $FUNC($PARAM string) error {
+        $DB.Save($PARAM)
+      }
+    message: "Rule 28: Validate input parameters before using them. Check for empty/nil values"
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: security
+      rule: "Go Rule 28"
+
+  # Rule 29: Check Nil Pointers
+  - id: go-rule-29-nil-check
+    pattern: |
+      func $FUNC($PTR *$TYPE) {
+        $PTR.$METHOD(...)
+      }
+    message: "Rule 29: Check for nil pointers before dereferencing to avoid panics"
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: error-handling
+      rule: "Go Rule 29"
+
+  # Rule 30: Validate Array/Slice Bounds
+  - id: go-rule-30-bounds-check
+    pattern: $ARR[$INDEX]
+    message: "Rule 30: Validate array/slice bounds before accessing to prevent index out of range panics"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: error-handling
+      rule: "Go Rule 30"
+
+  # ==========================================
+  # PERFORMANCE RULES
+  # ==========================================
+
+  # Rule 31: Avoid String Concatenation in Loops
+  - id: go-rule-31-string-concat-loop
+    pattern: |
+      for ... {
+        $STR = $STR + $X
+      }
+    message: "Rule 31: Avoid string concatenation in loops. Use strings.Builder for better performance"
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: performance
+      rule: "Go Rule 31"
+
+  # Rule 32: Use Buffered Channels When Appropriate
+  - id: go-rule-32-unbuffered-channel
+    pattern: make(chan $TYPE)
+    message: "Rule 32: Consider using buffered channels for better performance (e.g., make(chan Type, size))"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: performance
+      rule: "Go Rule 32"
+
+  # ==========================================
+  # BEST PRACTICES
+  # ==========================================
+
+  # Rule 33: Use Type Switch Instead of Type Assertions
+  - id: go-rule-33-type-assertion
+    pattern: $VAR.($TYPE)
+    message: "Rule 33: Use type switch for multiple type checks instead of repeated type assertions"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Go Rule 33"
+
+  # Rule 34: Prefer Early Returns
+  - id: go-rule-34-nested-if
+    pattern: |
+      if $COND1 {
+        if $COND2 {
+          if $COND3 {
+            ...
+          }
+        }
+      }
+    message: "Rule 34: Prefer early returns to reduce nesting. Use guard clauses"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: code-quality
+      rule: "Go Rule 34"
+
+  # Rule 35: Use sync.Once for Initialization
+  - id: go-rule-35-init-pattern
+    pattern: |
+      var initialized bool
+      if !initialized {
+        ...
+        initialized = true
+      }
+    message: "Rule 35: Use sync.Once for thread-safe one-time initialization"
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: concurrency
+      rule: "Go Rule 35"

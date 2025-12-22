@@ -2,122 +2,193 @@ rules:
   # ==========================================
   # COMMON RULES (ALL LANGUAGES)
   # ==========================================
-  # Security and code quality rules that apply across languages
+  # Security rules that apply universally across all programming languages
 
-  # SQL Injection
-  - id: sql-injection-risk
-    pattern-either:
-      - pattern: $DB.execute("... " + $VAR + " ...")
-      - pattern: $DB.query("... " + $VAR + " ...")
-    message: "Potential SQL injection vulnerability. Use parameterized queries"
-    languages: [javascript, typescript, python, java]
-    severity: ERROR
-    metadata:
-      category: security
-      cwe: CWE-89
+  # ==========================================
+  # SECURITY RULES
+  # ==========================================
 
-  # Eval Usage
-  - id: dangerous-eval
-    pattern: eval($X)
-    message: "Avoid using eval(). It can execute arbitrary code and is a security risk"
-    languages: [javascript, typescript, python]
-    severity: ERROR
-    metadata:
-      category: security
-      cwe: CWE-95
-
-  # Hardcoded Secret Token
-  - id: hardcoded-token
+  # Rule 1: Hardcoded Secret Tokens
+  - id: common-rule-1-hardcoded-token
     pattern-either:
       - pattern: $TOKEN = "sk_live_..."
       - pattern: $TOKEN = "ghp_..."
       - pattern: $SECRET = "-----BEGIN PRIVATE KEY-----"
-    message: "Hardcoded secret token detected. Use environment variables or secret management"
+      - pattern: $TOKEN = "AKIA..."
+      - pattern: $VAR = "Bearer ..."
+      - pattern: $PASSWORD = "..."
+    message: "Rule 1: Hardcoded secret token detected. Use environment variables or secret management"
     languages: [javascript, typescript, python, java, go]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-798
+      rule: "Common Rule 1"
 
-  # Duplicate Code
-  - id: duplicate-if-conditions
-    pattern: |
-      if ($COND) {
-        $BODY
-      }
-      ...
-      if ($COND) {
-        $BODY
-      }
-    message: "Duplicate code detected. Follow DRY principle"
-    languages: [javascript, typescript, java, go]
-    severity: INFO
-    metadata:
-      category: code-quality
-
-  # Missing Input Validation
-  - id: missing-input-validation
-    pattern: |
-      function $FUNC($PARAM) {
-        $DB.save($PARAM);
-      }
-    message: "Missing input validation. Validate parameters before using them"
-    languages: [javascript, typescript]
-    severity: WARNING
-    metadata:
-      category: security
-
-  # Unvalidated Redirect
-  - id: unvalidated-redirect
+  # Rule 2: SQL Injection Risk
+  - id: common-rule-2-sql-injection-risk
     pattern-either:
-      - pattern: window.location = $URL
-      - pattern: window.location.href = $URL
-    message: "Unvalidated redirect can lead to phishing attacks. Validate URL first"
-    languages: [javascript, typescript]
+      - pattern: $DB.execute("... " + $VAR + " ...")
+      - pattern: $DB.query("... " + $VAR + " ...")
+      - pattern: $CURSOR.execute("... " + $VAR + " ...")
+    message: "Rule 2: Potential SQL injection vulnerability. Use parameterized queries"
+    languages: [javascript, typescript, python, java]
     severity: ERROR
     metadata:
       category: security
-      cwe: CWE-601
+      cwe: CWE-89
+      rule: "Common Rule 2"
 
-  # Weak Crypto
-  - id: weak-crypto-md5
+  # Rule 3: Eval Usage
+  - id: common-rule-3-dangerous-eval
+    pattern: eval($X)
+    message: "Rule 3: Avoid using eval(). It can execute arbitrary code and is a security risk"
+    languages: [javascript, typescript, python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-95
+      rule: "Common Rule 3"
+
+  # Rule 4: Weak Hashing - MD5
+  - id: common-rule-4-weak-hash-md5
     pattern-either:
+      - pattern: md5(...)
+      - pattern: hashlib.md5(...)
+      - pattern: MessageDigest.getInstance("MD5")
       - pattern: crypto.createHash("md5")
-      - pattern: crypto.createHash('md5')
-    message: "MD5 is cryptographically broken. Use SHA-256 or stronger"
-    languages: [javascript, typescript]
+    message: "Rule 4: MD5 is cryptographically broken. Use SHA-256 or stronger"
+    languages: [javascript, typescript, python, java]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-327
+      rule: "Common Rule 4"
 
-  # Insecure Random
-  - id: insecure-random
-    pattern: Math.random()
-    message: "Math.random() is not cryptographically secure. Use crypto.randomBytes()"
-    languages: [javascript, typescript]
+  # Rule 5: Weak Hashing - SHA1
+  - id: common-rule-5-weak-hash-sha1
+    pattern-either:
+      - pattern: sha1(...)
+      - pattern: hashlib.sha1(...)
+      - pattern: MessageDigest.getInstance("SHA1")
+      - pattern: crypto.createHash("sha1")
+    message: "Rule 5: SHA1 is cryptographically broken. Use SHA-256 or stronger"
+    languages: [javascript, typescript, python, java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-327
+      rule: "Common Rule 5"
+
+  # Rule 6: Empty Exception Handlers (JavaScript/TypeScript/Java)
+  - id: common-rule-6-empty-catch-block
+    pattern: |
+      try {
+        ...
+      } catch ($E) {
+      }
+    message: "Rule 6: Never leave exception handlers empty. Log errors or rethrow them"
+    languages: [javascript, typescript, java]
+    severity: ERROR
+    metadata:
+      category: error-handling
+      rule: "Common Rule 6"
+
+  # Rule 7: Empty Exception Handlers (Python)
+  - id: common-rule-7-empty-except-python
+    pattern: |
+      try:
+        ...
+      except:
+        pass
+    message: "Rule 7: Never leave exception handlers empty. Log errors or rethrow them"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: error-handling
+      rule: "Common Rule 7"
+
+  # Rule 8: Bare Exception Handlers (Python)
+  - id: common-rule-8-bare-except-python
+    pattern: |
+      try:
+        ...
+      except:
+        ...
+    message: "Rule 8: Avoid bare except clauses. Catch specific exceptions"
+    languages: [python]
     severity: WARNING
     metadata:
-      category: security
+      category: error-handling
+      rule: "Common Rule 8"
 
-  # DOM XSS
-  - id: dom-xss-innerhtml
-    pattern: $EL.innerHTML = $VAR
-    message: "Setting innerHTML with user input can cause XSS. Use textContent or sanitize input"
-    languages: [javascript, typescript]
+  # Rule 9: Command/Shell Injection (Python)
+  - id: common-rule-9-shell-injection-python
+    pattern: os.system($CMD)
+    message: "Rule 9: os.system() is vulnerable to shell injection. Use subprocess with shell=False"
+    languages: [python]
     severity: ERROR
     metadata:
       category: security
-      cwe: CWE-79
+      cwe: CWE-78
+      rule: "Common Rule 9"
 
-  # Prototype Pollution
-  - id: prototype-pollution
+  # Rule 10: Pickle Deserialization (Python)
+  - id: common-rule-10-pickle-unsafe
+    pattern: pickle.loads($DATA)
+    message: "Rule 10: pickle.loads() can execute arbitrary code. Never unpickle untrusted data"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-502
+      rule: "Common Rule 10"
+
+  # Rule 11: YAML Unsafe Load (Python)
+  - id: common-rule-11-yaml-unsafe
+    pattern: yaml.load($DATA)
+    message: "Rule 11: yaml.load() can execute arbitrary code. Use yaml.safe_load()"
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-502
+      rule: "Common Rule 11"
+
+  # Rule 12: Mutable Default Arguments (Python)
+  - id: common-rule-12-mutable-default-python
     pattern-either:
-      - pattern: $OBJ["__proto__"] = ...
-      - pattern: $OBJ.constructor.prototype = ...
-    message: "Prototype pollution vulnerability detected"
-    languages: [javascript, typescript]
+      - pattern: |
+          def $FUNC($PARAM=[]):
+            ...
+      - pattern: |
+          def $FUNC($PARAM={}):
+            ...
+    message: "Rule 12: Mutable default arguments are dangerous. Use None and initialize inside function"
+    languages: [python]
     severity: ERROR
     metadata:
-      category: security
-      cwe: CWE-1321
+      category: best-practice
+      rule: "Common Rule 12"
+
+  # Rule 13: TODO/FIXME Comments
+  - id: common-rule-13-todo-fixme
+    pattern-either:
+      - pattern: |
+          // TODO: ...
+      - pattern: |
+          // FIXME: ...
+      - pattern: |
+          # TODO: ...
+      - pattern: |
+          # FIXME: ...
+      - pattern: |
+          // TODO ...
+      - pattern: |
+          # TODO ...
+    message: "Rule 13: TODO/FIXME comment found. Track these tasks in your issue tracker"
+    languages: [javascript, typescript, python, java, go]
+    severity: INFO
+    metadata:
+      category: code-quality
+      rule: "Common Rule 13"

@@ -1,6 +1,10 @@
 rules:
   # ==========================================
-  # JAVA SPECIFIC RULES
+  # JAVA SPECIFIC RULES - COMPLETE
+  # ==========================================
+
+  # ==========================================
+  # BASIC SYNTAX & BEST PRACTICES
   # ==========================================
 
   # Rule 1: Use .equals() for String Comparison
@@ -24,6 +28,10 @@ rules:
     metadata:
       category: best-practice
       rule: "Java Rule 2"
+
+  # ==========================================
+  # ERROR HANDLING RULES
+  # ==========================================
 
   # Rule 3: Always Handle Exceptions Properly
   - id: java-rule-3-handle-exceptions
@@ -52,6 +60,21 @@ rules:
       category: error-handling
       rule: "Java Rule 4"
 
+  # Rule 5: Use Try-With-Resources
+  - id: java-rule-5-try-with-resources
+    pattern: |
+      $RES = new FileInputStream(...);
+    message: "Rule 5: Use try-with-resources to ensure automatic resource cleanup"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: resource-management
+      rule: "Java Rule 5"
+
+  # ==========================================
+  # OBJECT-ORIENTED DESIGN
+  # ==========================================
+
   # Rule 6: Prefer Interfaces Over Implementations
   - id: java-rule-6-use-interface
     pattern-either:
@@ -68,12 +91,49 @@ rules:
   # Rule 7: Keep Fields Private
   - id: java-rule-7-private-fields
     pattern: public $TYPE $FIELD;
-    message: "Rule 7: Keep fields private. Use getters/setters for access"
+    message: "Rule 7: Keep fields private. Use getters/setters for access (encapsulation)"
     languages: [java]
     severity: WARNING
     metadata:
       category: encapsulation
       rule: "Java Rule 7"
+
+  # Rule 8: Use Constants for Fixed Values
+  - id: java-rule-8-magic-numbers
+    pattern-either:
+      - pattern: if ($VAR > 100) { ... }
+      - pattern: if ($VAR < 1000) { ... }
+      - pattern: if ($VAR == 50) { ... }
+    message: "Rule 8: Use constants for fixed values instead of magic numbers"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Java Rule 8"
+
+  # Rule 9: Avoid Hard-Coded Credentials
+  - id: java-rule-9-hardcoded-secrets
+    pattern-either:
+      - pattern: String $PASSWORD = "..."
+      - pattern: String $API_KEY = "..."
+      - pattern: String $SECRET = "..."
+    message: "Rule 9: Do not hard-code credentials. Use environment variables or configuration"
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-798
+      rule: "Java Rule 9"
+
+  # Rule 10: Use .equals() for Object Comparison
+  - id: java-rule-10-object-equals
+    pattern: if ($OBJ1 == $OBJ2)
+    message: "Rule 10: Use .equals() for object comparison, not =="
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: best-practice
+      rule: "Java Rule 10"
 
   # Rule 11: Avoid Catching Generic Exception
   - id: java-rule-11-generic-exception
@@ -85,18 +145,49 @@ rules:
       category: error-handling
       rule: "Java Rule 11"
 
+  # Rule 12: Avoid Null Pointer Exceptions
+  - id: java-rule-12-null-check
+    pattern: $OBJ.$METHOD(...)
+    message: "Rule 12: Check for null before calling methods to avoid NullPointerException"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: null-safety
+      rule: "Java Rule 12"
+
+  # Rule 13: Use Optional to Handle Absence
+  - id: java-rule-13-use-optional
+    pattern: |
+      if ($VAR == null) {
+        return null;
+      }
+    message: "Rule 13: Consider using Optional<T> to handle absence explicitly"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Java Rule 13"
+
+  # ==========================================
+  # PERFORMANCE RULES
+  # ==========================================
+
   # Rule 14: Avoid String Concatenation in Loops
   - id: java-rule-14-string-concat-loop
     pattern: |
       for (...) {
         $STR = $STR + $X;
       }
-    message: "Rule 14: Use StringBuilder for string concatenation in loops"
+    message: "Rule 14: Use StringBuilder for string concatenation in loops for better performance"
     languages: [java]
     severity: WARNING
     metadata:
       category: performance
       rule: "Java Rule 14"
+
+  # ==========================================
+  # SECURITY RULES
+  # ==========================================
 
   # Rule 15: Use PreparedStatement for SQL
   - id: java-rule-15-sql-injection
@@ -111,6 +202,56 @@ rules:
       cwe: CWE-89
       rule: "Java Rule 15"
 
+  # Rule 16: Avoid Public Fields
+  - id: java-rule-16-no-public-fields
+    pattern: |
+      class $CLASS {
+        public $TYPE $FIELD;
+      }
+    message: "Rule 16: Avoid public fields. Use private fields with getters/setters"
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: encapsulation
+      rule: "Java Rule 16"
+
+  # Rule 17: Make Methods Small and Focused
+  - id: java-rule-17-long-method
+    pattern: |
+      $MODS $TYPE $METHOD(...) {
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+        ...
+      }
+    message: "Rule 17: Keep methods small and focused. Break down large methods (max 50 lines)"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: code-quality
+      rule: "Java Rule 17"
+
+  # Rule 18: Use Immutable Objects Where Possible
+  - id: java-rule-18-immutable-class
+    pattern: |
+      public class $CLASS {
+        private $TYPE $FIELD;
+      }
+    message: "Rule 18: Consider making classes immutable (final class, final fields)"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Java Rule 18"
+
   # Rule 19: Avoid Thread.sleep() in Loops
   - id: java-rule-19-sleep-in-loop
     pattern: |
@@ -124,37 +265,289 @@ rules:
       category: concurrency
       rule: "Java Rule 19"
 
-  # Null Pointer Risk
-  - id: java-null-check-missing
+  # Rule 20: Follow Java Naming Conventions
+  - id: java-rule-20-class-naming
+    pattern: class $CLASS { ... }
+    message: "Rule 20: Follow Java naming conventions (PascalCase for classes)"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Java Rule 20"
+
+  # ==========================================
+  # ADDITIONAL SECURITY RULES
+  # ==========================================
+
+  # Rule 21: Null Pointer Risk
+  - id: java-rule-21-null-check-missing
     pattern: |
       if ($OBJ != null) {
         $OBJ.$METHOD(...);
       }
       $OBJ.$METHOD2(...);
-    message: "Potential null pointer exception. Check for null before use"
+    message: "Rule 21: Potential null pointer exception. Check for null before use"
     languages: [java]
     severity: WARNING
     metadata:
       category: null-safety
+      rule: "Java Rule 21"
 
-  # Resource Leak
-  - id: java-resource-leak
+  # Rule 22: Resource Leak
+  - id: java-rule-22-resource-leak
     pattern: |
       $RES = new FileInputStream(...);
-    message: "Resource may not be closed. Use try-with-resources"
+    message: "Rule 22: Resource may not be closed. Use try-with-resources"
     languages: [java]
     severity: WARNING
     metadata:
       category: resource-management
+      rule: "Java Rule 22"
 
-  # Weak Hashing
-  - id: java-weak-hash
+  # Rule 23: Weak Hashing
+  - id: java-rule-23-weak-hash
     pattern-either:
       - pattern: MessageDigest.getInstance("MD5")
       - pattern: MessageDigest.getInstance("SHA1")
-    message: "MD5 and SHA1 are weak. Use SHA-256 or stronger"
+    message: "Rule 23: MD5 and SHA1 are weak. Use SHA-256 or stronger"
     languages: [java]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-327
+      rule: "Java Rule 23"
+
+  # ==========================================
+  # NAMING CONVENTION RULES
+  # ==========================================
+
+  # Rule 24: Class Names Should Use PascalCase
+  - id: java-rule-24-class-naming-convention
+    pattern: class $className { ... }
+    message: "Rule 24: Class names should use PascalCase (e.g., UserService, DatabaseConnection)"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Java Rule 24"
+
+  # Rule 25: Method Names Should Use camelCase
+  - id: java-rule-25-method-naming
+    pattern: |
+      public void $MethodName(...) {
+        ...
+      }
+    message: "Rule 25: Method names should use camelCase (e.g., getUserData, calculateTotal)"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Java Rule 25"
+
+  # Rule 26: Constant Naming Convention
+  - id: java-rule-26-constant-naming
+    pattern: |
+      public static final $TYPE $name = ...;
+    message: "Rule 26: Constants should use UPPER_CASE naming convention (e.g., MAX_SIZE, API_URL)"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Java Rule 26"
+
+  # Rule 27: Package Names Should Be Lowercase
+  - id: java-rule-27-package-naming
+    pattern: package $Package.Name;
+    message: "Rule 27: Package names should be lowercase (e.g., com.example.util, not com.Example.Util)"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Java Rule 27"
+
+  # Rule 28: Boolean Variable Names
+  - id: java-rule-28-boolean-naming
+    pattern-either:
+      - pattern: boolean active = ...
+      - pattern: boolean valid = ...
+      - pattern: boolean enabled = ...
+    message: "Rule 28: Boolean variables should start with is/has/can (e.g., isActive, hasPermission, canEdit)"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: naming-convention
+      rule: "Java Rule 28"
+
+  # ==========================================
+  # INPUT VALIDATION RULES
+  # ==========================================
+
+  # Rule 29: Validate Method Parameters
+  - id: java-rule-29-missing-validation
+    pattern: |
+      public void $METHOD($TYPE $PARAM) {
+        database.save($PARAM);
+      }
+    message: "Rule 29: Validate method parameters before using them. Check for null and invalid values"
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: security
+      rule: "Java Rule 29"
+
+  # Rule 30: Check Array Bounds
+  - id: java-rule-30-array-bounds
+    pattern: $ARRAY[$INDEX]
+    message: "Rule 30: Validate array indices to prevent ArrayIndexOutOfBoundsException"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: error-handling
+      rule: "Java Rule 30"
+
+  # Rule 31: Validate User Input
+  - id: java-rule-31-user-input-validation
+    pattern: |
+      String $INPUT = request.getParameter($PARAM);
+      ...
+      $DB.execute($INPUT);
+    message: "Rule 31: Always validate and sanitize user input before use"
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: security
+      rule: "Java Rule 31"
+
+  # ==========================================
+  # DOCUMENTATION RULES
+  # ==========================================
+
+  # Rule 32: Public Methods Should Have JavaDoc
+  - id: java-rule-32-missing-javadoc
+    pattern: |
+      public $TYPE $METHOD(...) {
+        ...
+      }
+    message: "Rule 32: Public methods should have JavaDoc comments describing purpose, parameters, and return value"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: documentation
+      rule: "Java Rule 32"
+
+  # Rule 33: Classes Should Have JavaDoc
+  - id: java-rule-33-class-javadoc
+    pattern: |
+      public class $CLASS {
+        ...
+      }
+    message: "Rule 33: Public classes should have JavaDoc comments describing their purpose"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: documentation
+      rule: "Java Rule 33"
+
+  # ==========================================
+  # CONCURRENCY RULES
+  # ==========================================
+
+  # Rule 34: Use Synchronized Properly
+  - id: java-rule-34-synchronized-usage
+    pattern: |
+      synchronized ($OBJ) {
+        ...
+      }
+    message: "Rule 34: Ensure synchronized blocks are minimal and necessary to avoid performance issues"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: concurrency
+      rule: "Java Rule 34"
+
+  # Rule 35: Avoid Double-Checked Locking
+  - id: java-rule-35-double-checked-locking
+    pattern: |
+      if ($VAR == null) {
+        synchronized ($LOCK) {
+          if ($VAR == null) {
+            ...
+          }
+        }
+      }
+    message: "Rule 35: Double-checked locking is broken in Java. Use other initialization patterns"
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: concurrency
+      rule: "Java Rule 35"
+
+  # ==========================================
+  # BEST PRACTICES
+  # ==========================================
+
+  # Rule 36: Override hashCode When Overriding equals
+  - id: java-rule-36-hashcode-equals
+    pattern: |
+      public boolean equals(Object $OBJ) {
+        ...
+      }
+    message: "Rule 36: Override hashCode() when overriding equals() to maintain contract"
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: best-practice
+      rule: "Java Rule 36"
+
+  # Rule 37: Close Resources in Finally Block
+  - id: java-rule-37-close-in-finally
+    pattern: |
+      try {
+        $RES = ...
+        ...
+      } catch (...) {
+        ...
+      }
+    message: "Rule 37: Close resources in finally block or use try-with-resources"
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: resource-management
+      rule: "Java Rule 37"
+
+  # Rule 38: Avoid Hardcoded IP Addresses
+  - id: java-rule-38-hardcoded-ip
+    pattern: String $IP = "$NUM.$NUM.$NUM.$NUM"
+    message: "Rule 38: Avoid hardcoding IP addresses. Use configuration files or environment variables"
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: configuration
+      rule: "Java Rule 38"
+
+  # Rule 39: Use Enhanced For Loop
+  - id: java-rule-39-enhanced-for-loop
+    pattern: |
+      for (int i = 0; i < $ARR.length; i++) {
+        $TYPE $VAR = $ARR[i];
+        ...
+      }
+    message: "Rule 39: Use enhanced for-loop (for-each) for better readability when possible"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: best-practice
+      rule: "Java Rule 39"
+
+  # Rule 40: Prefer Composition Over Inheritance
+  - id: java-rule-40-inheritance-depth
+    pattern: |
+      class $CLASS extends $PARENT {
+        ...
+      }
+    message: "Rule 40: Consider composition over inheritance for better flexibility and maintainability"
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: design-pattern
+      rule: "Java Rule 40"

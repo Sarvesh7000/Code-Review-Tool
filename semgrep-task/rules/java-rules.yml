@@ -1,160 +1,163 @@
 rules:
   # ==========================================
-  # JAVA SPECIFIC RULES
+  # JAVA SPECIFIC RULES (OOP & Security)
   # ==========================================
 
-  # Rule 1: Use .equals() for String Comparison
-  - id: java-rule-1-string-equals
-    pattern: $STR1 == $STR2
-    message: "Rule 1: Use .equals() for string comparison, not =="
-    languages: [java]
-    severity: ERROR
-    metadata:
-      category: best-practice
-      rule: "Java Rule 1"
+  # --- SECTION 1: NAMING CONVENTIONS ---
 
-  # Rule 2: Avoid Using System.out.println in Production
-  - id: java-rule-2-no-system-out
-    pattern-either:
-      - pattern: System.out.println(...)
-      - pattern: System.err.println(...)
-    message: "Rule 2: Avoid System.out.println in production. Use proper logging framework (log4j, slf4j)"
+  # Rule 1: Variable and Method Naming (lowerCamelCase)
+  - id: java-rule-1-camel-case
+    pattern-regex: (private|protected|public)\s+[\w<>]+\s+[A-Z_][a-zA-Z0-9_]*(\s*[\(|=])
+    message: "Rule 1: Methods and variables should use lowerCamelCase (e.g., 'calculateTotal'), not PascalCase or snake_case."
     languages: [java]
     severity: WARNING
     metadata:
-      category: best-practice
-      rule: "Java Rule 2"
+      category: naming-convention
 
-  # Rule 3: Always Handle Exceptions Properly
-  - id: java-rule-3-handle-exceptions
-    pattern: |
-      catch (Exception $E) {
-        System.out.println($E);
-      }
-    message: "Rule 3: Handle exceptions properly. Use logger.error() instead of System.out"
+  # Rule 2: Class and Interface Naming (PascalCase)
+  - id: java-rule-2-pascal-case
+    pattern-regex: (class|interface|enum)\s+[a-z][a-zA-Z0-9_]*
+    message: "Rule 2: Classes, Interfaces, and Enums should use PascalCase (e.g., 'PaymentProcessor')."
     languages: [java]
     severity: WARNING
     metadata:
-      category: error-handling
-      rule: "Java Rule 3"
+      category: naming-convention
 
-  # Rule 4: Do Not Leave Empty Catch Blocks
-  - id: java-rule-4-empty-catch
-    pattern: |
-      try {
-        ...
-      } catch (Exception $E) {
-      }
-    message: "Rule 4: Do not leave empty catch blocks. Log or rethrow exceptions"
-    languages: [java]
-    severity: ERROR
-    metadata:
-      category: error-handling
-      rule: "Java Rule 4"
-
-  # Rule 6: Prefer Interfaces Over Implementations
-  - id: java-rule-6-use-interface
-    pattern-either:
-      - pattern: ArrayList $VAR = new ArrayList(...)
-      - pattern: HashMap $VAR = new HashMap(...)
-      - pattern: HashSet $VAR = new HashSet(...)
-    message: "Rule 6: Use interface types (List, Map, Set) instead of concrete implementations"
+  # Rule 3: Constant Naming (UPPER_SNAKE_CASE)
+  - id: java-rule-3-constant-naming
+    pattern: static final $TYPE $VAR = $VAL;
+    metavariable-regex:
+      metavariable: $VAR
+      regex: [a-z]
+    message: "Rule 3: Constants (static final) should use UPPER_SNAKE_CASE (e.g., 'MAX_RETRY_COUNT')."
     languages: [java]
     severity: INFO
     metadata:
-      category: best-practice
-      rule: "Java Rule 6"
+      category: naming-convention
 
-  # Rule 7: Keep Fields Private
-  - id: java-rule-7-private-fields
-    pattern: public $TYPE $FIELD;
-    message: "Rule 7: Keep fields private. Use getters/setters for access"
+  # --- SECTION 2: SYNTAX & OBJECT COMPARISON ---
+
+  # Rule 4: Use .equals() for String Comparison
+  - id: java-rule-4-string-equals
+    pattern: $STR1 == $STR2
+    metavariable-type:
+      metavariable: $STR1
+      type: String
+    message: "Rule 4: Use '.equals()' for string comparison. '==' compares object references, not content."
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: best-practice
+
+  # Rule 5: Avoid System.out.println
+  - id: java-rule-5-no-sysout
+    pattern: System.out.println(...)
+    message: "Rule 5: Avoid 'System.out.println' in production. Use a logging framework like SLF4J or Log4j."
     languages: [java]
     severity: WARNING
     metadata:
-      category: encapsulation
-      rule: "Java Rule 7"
+      category: best-practice
 
-  # Rule 11: Avoid Catching Generic Exception
-  - id: java-rule-11-generic-exception
-    pattern: catch (Exception $E)
-    message: "Rule 11: Avoid catching generic Exception. Catch specific exceptions"
+  # --- SECTION 3: ERROR HANDLING & LOGGING ---
+
+  # Rule 6: Do Not Leave Empty Catch Blocks
+  - id: java-rule-6-empty-catch
+    pattern: catch ($EX $E) { }
+    message: "Rule 6: Never leave catch blocks empty. Log the exception or rethrow it to avoid swallowing errors."
+    languages: [java]
+    severity: ERROR
+    metadata:
+      category: error-handling
+
+  # Rule 7: Catch Specific Exceptions
+  - id: java-rule-7-specific-exception
+    pattern: catch (Exception $E) { ... }
+    message: "Rule 7: Avoid catching generic 'Exception'. Catch specific exceptions (e.g., 'IOException') for better error handling."
     languages: [java]
     severity: WARNING
     metadata:
       category: error-handling
-      rule: "Java Rule 11"
 
-  # Rule 14: Avoid String Concatenation in Loops
-  - id: java-rule-14-string-concat-loop
+  # --- SECTION 4: RESOURCE MANAGEMENT ---
+
+  # Rule 8: Use Try-With-Resources
+  - id: java-rule-8-try-with-resources
     pattern: |
-      for (...) {
-        $STR = $STR + $X;
-      }
-    message: "Rule 14: Use StringBuilder for string concatenation in loops"
+      $RES $R = new $RES(...);
+      try { ... } finally { $R.close(); }
+    message: "Rule 8: Use try-with-resources for AutoCloseable objects to ensure resources are closed properly."
     languages: [java]
     severity: WARNING
     metadata:
-      category: performance
-      rule: "Java Rule 14"
+      category: best-practice
 
-  # Rule 15: Use PreparedStatement for SQL
-  - id: java-rule-15-sql-injection
-    pattern: |
-      Statement $STMT = ...;
-      $STMT.execute("... " + $VAR + " ...");
-    message: "Rule 15: Use PreparedStatement to prevent SQL injection"
+  # --- SECTION 5: SECURITY ---
+
+  # Rule 9: Prevent SQL Injection
+  - id: java-rule-9-sql-injection
+    pattern: $CONN.createStatement().executeQuery(...)
+    message: "Rule 9: Avoid building SQL queries with string concatenation. Use 'PreparedStatement' to prevent SQL injection."
     languages: [java]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-89
-      rule: "Java Rule 15"
 
-  # Rule 19: Avoid Thread.sleep() in Loops
-  - id: java-rule-19-sleep-in-loop
-    pattern: |
-      while (...) {
-        Thread.sleep(...);
-      }
-    message: "Rule 19: Avoid Thread.sleep() in loops. Use ScheduledExecutorService"
-    languages: [java]
-    severity: WARNING
-    metadata:
-      category: concurrency
-      rule: "Java Rule 19"
-
-  # Null Pointer Risk
-  - id: java-null-check-missing
-    pattern: |
-      if ($OBJ != null) {
-        $OBJ.$METHOD(...);
-      }
-      $OBJ.$METHOD2(...);
-    message: "Potential null pointer exception. Check for null before use"
-    languages: [java]
-    severity: WARNING
-    metadata:
-      category: null-safety
-
-  # Resource Leak
-  - id: java-resource-leak
-    pattern: |
-      $RES = new FileInputStream(...);
-    message: "Resource may not be closed. Use try-with-resources"
-    languages: [java]
-    severity: WARNING
-    metadata:
-      category: resource-management
-
-  # Weak Hashing
-  - id: java-weak-hash
-    pattern-either:
-      - pattern: MessageDigest.getInstance("MD5")
-      - pattern: MessageDigest.getInstance("SHA1")
-    message: "MD5 and SHA1 are weak. Use SHA-256 or stronger"
+  # Rule 10: Avoid Hardcoded Credentials
+  - id: java-rule-10-hardcoded-secret
+    pattern-regex: (password|secret|key|token)\s*=\s*["'][^"']+["']
+    message: "Rule 10: Do not hardcode passwords or API keys. Use environment variables or a secret manager."
     languages: [java]
     severity: ERROR
     metadata:
       category: security
-      cwe: CWE-327
+
+  # --- SECTION 6: CODE QUALITY & OOP ---
+
+  # Rule 11: Keep Fields Private
+  - id: java-rule-11-private-fields
+    pattern: public $TYPE $VAR;
+    metavariable-regex:
+      metavariable: $VAR
+      regex: ^(?!static|final).*
+    message: "Rule 11: Keep class fields private and provide getters/setters (Encapsulation)."
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: code-quality
+
+  # Rule 12: Avoid Deeply Nested Code
+  - id: java-rule-12-reduce-nesting
+    pattern: if ($C1) { if ($C2) { if ($C3) { if ($C4) { ... } } } }
+    message: "Rule 12: Reduce nested code. Use guard clauses and early returns to improve readability."
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: code-quality
+
+  # Rule 13: Overriding toString() and equals()
+  - id: java-rule-13-override-methods
+    pattern: class $CLASS { ... }
+    message: "Rule 13: Consider overriding 'toString()', 'equals()', and 'hashCode()' for Domain/DTO classes."
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: best-practice
+
+  # Rule 14: Use Optional to Avoid NullPointerException
+  - id: java-rule-14-use-optional
+    pattern: if ($OBJ != null) { return $OBJ; } else { return null; }
+    message: "Rule 14: Consider returning 'Optional<T>' instead of 'null' to clearly represent the absence of a value."
+    languages: [java]
+    severity: INFO
+    metadata:
+      category: best-practice
+
+  # Rule 15: Avoid Magic Numbers
+  - id: java-rule-15-no-magic-numbers
+    pattern-regex: \b(if|while|for)\s*\(.*[><=]=?\s*([1-9][0-9]+).*\)
+    message: "Rule 15: Avoid magic numbers in logic. Define them as named constants (e.g., 'MAX_LOGIN_ATTEMPTS')."
+    languages: [java]
+    severity: WARNING
+    metadata:
+      category: best-practice

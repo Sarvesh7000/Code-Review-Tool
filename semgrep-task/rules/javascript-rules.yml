@@ -2,234 +2,208 @@ rules:
   # ==========================================
   # JAVASCRIPT/TYPESCRIPT SPECIFIC RULES
   # ==========================================
-  
-  # Rule 1: Use Strict Equality
-  - id: js-rule-1-strict-equality-check
+
+  # --- SECTION 1: NAMING CONVENTIONS ---
+
+  # Rule 1: Variable and Function Naming (camelCase)
+  - id: js-rule-1-camel-case-naming
+    pattern-regex: (const|let|var|function)\s+[A-Z_][a-zA-Z0-9_]*
+    message: "Rule 1: Variables and functions should use camelCase (e.g., 'getUserData'), not PascalCase or snake_case."
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: naming-convention
+
+  # Rule 2: Class and Interface Naming (PascalCase)
+  - id: js-rule-2-pascal-case-naming
+    pattern-regex: (class|interface)\s+[a-z][a-zA-Z0-9_]*
+    message: "Rule 2: Classes and Interfaces should use PascalCase (e.g., 'UserProfile')."
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: naming-convention
+
+  # Rule 3: Constant Naming (UPPER_SNAKE_CASE)
+  - id: js-rule-3-constant-naming
+    pattern-regex: const\s+[a-z][a-zA-Z0-9_]*\s*=\s*[^'"`]*['"`]
+    message: "Rule 3: Global constants should use UPPER_SNAKE_CASE (e.g., 'API_KEY')."
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: naming-convention
+
+  # --- SECTION 2: SYNTAX & VARIABLES ---
+
+  # Rule 4: Use Strict Equality
+  - id: js-rule-4-strict-equality
     pattern-either:
-      - pattern: if ($X == $Y) { ... }
-      - pattern: while ($X == $Y) { ... }
-      - pattern: $VAR = $X == $Y
-    message: "Rule 1: Use strict equality (===) instead of == to prevent unexpected type coercion"
+      - pattern: $X == $Y
+      - pattern: $X != $Y
+    message: "Rule 4: Use strict equality (=== or !==) to prevent unexpected type coercion."
     languages: [javascript, typescript]
     severity: WARNING
     metadata:
       category: best-practice
-      rule: "JS Rule 1"
 
-  - id: js-rule-1-strict-inequality-check
-    pattern-either:
-      - pattern: if ($X != $Y) { ... }
-      - pattern: while ($X != $Y) { ... }
-      - pattern: $VAR = $X != $Y
-    message: "Rule 1: Use strict inequality (!==) instead of != to prevent unexpected type coercion"
-    languages: [javascript, typescript]
-    severity: WARNING
-    metadata:
-      category: best-practice
-      rule: "JS Rule 1"
-
-  # Rule 2: Use const or let (Never var)
-  - id: js-rule-2-no-var
+  # Rule 5: Use const or let (Never var)
+  - id: js-rule-5-no-var
     pattern: var $VAR = $VALUE
-    message: "Rule 2: Never use 'var'. Use 'const' or 'let' to avoid scope and hoisting issues"
+    message: "Rule 5: Never use 'var'. Use 'const' or 'let' to avoid scope hoisting issues."
     languages: [javascript, typescript]
     severity: ERROR
     metadata:
       category: best-practice
-      rule: "JS Rule 2"
 
-  # Rule 3: Prefer const Over let
-  - id: js-rule-3-prefer-const
+  # Rule 6: Prefer const Over let
+  - id: js-rule-6-prefer-const
     pattern: let $VAR = $VALUE
-    message: "Rule 3: Prefer 'const' over 'let' to prevent accidental reassignment (use let only if reassignment is needed)"
+    message: "Rule 6: Prefer 'const' over 'let' unless the variable needs to be reassigned."
     languages: [javascript, typescript]
     severity: INFO
     metadata:
       category: best-practice
-      rule: "JS Rule 3"
 
-  # Rule 5: Always Handle Errors
-  - id: js-rule-5-empty-catch
+  # --- SECTION 3: FUNCTIONS & ASYNC ---
+
+  # Rule 7: One Function Should Do One Thing
+  - id: js-rule-7-single-responsibility
     pattern: |
-      try {
-        ...
-      } catch ($E) {
+      function $FUNC(...) {
+        ... # (Logic exceeding 40 lines)
       }
-    message: "Rule 5: Always handle errors. Never leave catch blocks empty - log errors or rethrow them"
+    message: "Rule 7: One function should do one thing. Break down functions exceeding 40 lines."
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: code-quality
+
+  # Rule 8: Prefer async/await Over Promise Chains
+  - id: js-rule-8-prefer-async-await
+    pattern: $FUNC().then($H1).then($H2)
+    message: "Rule 8: Prefer async/await over .then() chains for better readability."
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: async-patterns
+
+  # Rule 9: Avoid async inside forEach
+  - id: js-rule-9-no-async-foreach
+    pattern: $ARR.forEach(async ($ITEM) => { ... })
+    message: "Rule 9: Avoid async inside forEach. Use for...of or Promise.all() instead."
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: async-patterns
+
+  # Rule 10: Handle Promises Properly
+  - id: js-rule-10-promise-catch
+    pattern: $PROMISE.then($H)
+    message: "Rule 10: Always add .catch() to Promises to handle potential rejections."
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: async-patterns
+
+  # --- SECTION 4: ERROR HANDLING & LOGGING ---
+
+  # Rule 11: Do Not Leave Empty Catch Blocks
+  - id: js-rule-11-empty-catch
+    pattern: |
+      try { ... } catch ($E) { }
+    message: "Rule 11: Never leave catch blocks empty. Log the error or rethrow it."
     languages: [javascript, typescript]
     severity: ERROR
     metadata:
       category: error-handling
-      rule: "JS Rule 5"
 
-  # Rule 6: Handle Promises Properly
-  - id: js-rule-6-promise-without-catch
-    pattern: $PROMISE.then($HANDLER);
-    message: "Rule 6: Handle promises properly. Always add .catch() to handle rejections"
-    languages: [javascript, typescript]
-    severity: WARNING
-    metadata:
-      category: async-patterns
-      rule: "JS Rule 6"
-
-  # Rule 7: Prefer async/await
-  - id: js-rule-7-prefer-async-await
-    pattern: |
-      $FUNC().then($HANDLER1).then($HANDLER2)
-    message: "Rule 7: Prefer async/await over promise chains for better readability and control flow"
-    languages: [javascript, typescript]
-    severity: INFO
-    metadata:
-      category: async-patterns
-      rule: "JS Rule 7"
-
-  # Rule 8: Avoid console.log in Production
-  - id: js-rule-8-no-console-production
+  # Rule 12: Avoid console.log in Production
+  - id: js-rule-12-no-console
     pattern-either:
       - pattern: console.log(...)
-      - pattern: console.debug(...)
-      - pattern: console.info(...)
       - pattern: console.warn(...)
-    message: "Rule 8: Avoid console statements in production. Use a proper logging library (e.g., winston, pino)"
+    message: "Rule 12: Avoid console statements in production. Use a logging library like Winston."
     languages: [javascript, typescript]
     severity: WARNING
     metadata:
       category: best-practice
-      rule: "JS Rule 8"
 
-  # Rule 10: Validate Inputs
-  - id: js-rule-10-missing-validation
-    pattern: |
-      function $FUNC($PARAM) {
-        $DB.save($PARAM);
-      }
-    message: "Rule 10: Validate inputs before using them. Check for null/undefined and validate data types"
-    languages: [javascript, typescript]
-    severity: WARNING
-    metadata:
-      category: security
-      rule: "JS Rule 10"
+  # --- SECTION 5: SECURITY ---
 
-  # Rule 11: Do Not Modify Function Parameters
-  - id: js-rule-11-no-param-mutation
-    pattern-either:
-      - pattern: |
-          function $FUNC($PARAM) {
-            $PARAM.$PROP = ...;
-            ...
-          }
-      - pattern: |
-          function $FUNC($PARAM) {
-            $PARAM = ...;
-            ...
-          }
-    message: "Rule 11: Do not modify function parameters. Return new objects to avoid side effects"
-    languages: [javascript, typescript]
-    severity: WARNING
-    metadata:
-      category: best-practice
-      rule: "JS Rule 11"
-
-  # Rule 12: Avoid eval()
-  - id: js-rule-12-no-eval
+  # Rule 13: Avoid eval()
+  - id: js-rule-13-no-eval
     pattern: eval($X)
-    message: "Rule 12: Never use eval(). It executes arbitrary code and is a major security risk"
+    message: "Rule 13: Never use eval(). It is a major security risk (arbitrary code execution)."
     languages: [javascript, typescript]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-95
-      rule: "JS Rule 12"
 
-  # Rule 13: Avoid innerHTML with User Data
-  - id: js-rule-13-no-innerhtml
-    pattern-either:
-      - pattern: $EL.innerHTML = $VAR
-      - pattern: $EL.outerHTML = $VAR
-    message: "Rule 13: Avoid innerHTML with user data. Use textContent or sanitize input to prevent XSS attacks"
+  # Rule 14: Avoid innerHTML with User Data
+  - id: js-rule-14-no-innerhtml
+    pattern: $EL.innerHTML = $VAR
+    message: "Rule 14: Avoid innerHTML. Use textContent or sanitize input to prevent XSS."
     languages: [javascript, typescript]
     severity: ERROR
     metadata:
       category: security
       cwe: CWE-79
-      rule: "JS Rule 13"
 
-  # Rule 14: Always Specify Radix in parseInt
-  - id: js-rule-14-parseint-radix
-    pattern: parseInt($X)
-    message: "Rule 14: Always specify radix in parseInt(). Use parseInt(value, 10) for decimal numbers"
-    languages: [javascript, typescript]
-    severity: WARNING
-    metadata:
-      category: best-practice
-      rule: "JS Rule 14"
+  # --- SECTION 6: BEST PRACTICES & QUALITY ---
 
-  # Rule 15: Avoid async inside forEach
-  - id: js-rule-15-no-async-foreach
-    pattern: |
-      $ARR.forEach(async ($ITEM) => {
-        ...
-      })
-    message: "Rule 15: Avoid async inside forEach. Use for...of loop or Promise.all() with map()"
-    languages: [javascript, typescript]
-    severity: ERROR
-    metadata:
-      category: async-patterns
-      rule: "JS Rule 15"
-
-  # Rule 18: Use Default Parameters
-  - id: js-rule-18-default-params
+  # Rule 15: Do Not Modify Function Parameters
+  - id: js-rule-15-no-param-mutation
     pattern: |
       function $FUNC($PARAM) {
-        if (!$PARAM) {
-          $PARAM = $DEFAULT;
-        }
-        ...
+        $PARAM = $VAL;
       }
-    message: "Rule 18: Use default parameters instead of manual checks (e.g., function log(level = 'info'))"
+    message: "Rule 15: Do not reassign function parameters. Return new objects instead."
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: best-practice
+
+  # Rule 16: Specify Radix in parseInt
+  - id: js-rule-16-parseint-radix
+    pattern: parseInt($X)
+    message: "Rule 16: Always specify a radix (e.g., parseInt(val, 10)) to avoid parsing errors."
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      category: best-practice
+
+  # Rule 17: Use Default Parameters
+  - id: js-rule-17-default-params
+    pattern: if (!$PARAM) { $PARAM = $DEFAULT; }
+    message: "Rule 17: Use ES6 default parameters instead of manual null checks in function bodies."
     languages: [javascript, typescript]
     severity: INFO
     metadata:
       category: best-practice
-      rule: "JS Rule 18"
 
-  # Rule 19: Reduce Nested Code
-  - id: js-rule-19-reduce-nesting
-    pattern: |
-      if ($COND1) {
-        if ($COND2) {
-          if ($COND3) {
-            ...
-          }
-        }
-      }
-    message: "Rule 19: Reduce nested code. Use early returns to improve readability"
+  # Rule 18: Reduce Nested Code
+  - id: js-rule-18-reduce-nesting
+    pattern: if ($C1) { if ($C2) { if ($C3) { ... } } }
+    message: "Rule 18: Reduce nested code. Use guard clauses (early returns) to improve clarity."
     languages: [javascript, typescript]
     severity: INFO
     metadata:
       category: code-quality
-      rule: "JS Rule 19"
 
-  # Rule 20: One Function Should Do One Thing
-  - id: js-rule-20-single-responsibility
-    pattern: |
-      function $FUNC(...) {
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-      }
-    message: "Rule 20: One function should do one thing. Break down large functions following Single Responsibility Principle"
+  # Rule 19: Use Arrow Functions for Callbacks
+  - id: js-rule-19-arrow-callbacks
+    pattern: $ARR.map(function($ITEM) { ... })
+    message: "Rule 19: Use arrow functions (=>) for callbacks to maintain 'this' context."
     languages: [javascript, typescript]
-    severity: WARNING
+    severity: INFO
     metadata:
-      category: code-quality
-      rule: "JS Rule 20"
+      category: best-practice
+
+  # Rule 20: Avoid Template Literal Overuse
+  - id: js-rule-20-template-literal
+    pattern: "`$STR`"
+    message: "Rule 20: Use regular quotes for simple strings; use template literals only for interpolation."
+    languages: [javascript, typescript]
+    severity: INFO
+    metadata:
+      category: readability

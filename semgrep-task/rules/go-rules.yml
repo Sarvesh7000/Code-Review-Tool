@@ -1,140 +1,167 @@
 rules:
   # ==========================================
-  # GO (GOLANG) SPECIFIC RULES
+  # GO SPECIFIC RULES (Idiomatic & Security)
   # ==========================================
 
-  # Rule 1: Always Handle Errors Immediately
-  - id: go-rule-1-unhandled-error
+  # --- SECTION 1: NAMING CONVENTIONS ---
+
+  # Rule 1: Variable and Function Naming (mixedCaps)
+  - id: go-rule-1-camel-case
+    pattern-regex: (var|func)\s+[a-z0-9]+_[a-z0-9_]*
+    message: "Rule 1: Go uses mixedCaps (camelCase) or UpperCase for exported names, not snake_case."
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: naming-convention
+
+  # Rule 2: Interface Naming (Suffix -er)
+  - id: go-rule-2-interface-naming
+    pattern-regex: type\s+[A-Z][a-zA-Z0-9]*\s+interface
+    pattern-not-regex: type\s+[A-Z][a-zA-Z0-9]*er\s+interface
+    message: "Rule 2: Interfaces should generally be named with an -er suffix (e.g., 'Reader', 'Writer')."
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: naming-convention
+
+  # --- SECTION 2: ERROR HANDLING ---
+
+  # Rule 3: Don't Ignore Errors
+  - id: go-rule-3-no-ignore-error
+    pattern: $VAL, _ := $FUNC(...)
+    message: "Rule 3: Never ignore error returns using '_'. Always check the error value."
+    languages: [go]
+    severity: ERROR
+    metadata:
+      category: error-handling
+
+  # Rule 4: Error Check Immediately
+  - id: go-rule-4-error-check-flow
     pattern: |
-      $X, err := $FUNC(...)
-    message: "Rule 1: Always handle errors immediately. Check if err != nil after assignment"
+      $VAL, err := $FUNC(...)
+      ... # (Logic without checking err)
+    message: "Rule 4: Handle or check errors immediately after the function call."
     languages: [go]
     severity: WARNING
     metadata:
       category: error-handling
-      rule: "Go Rule 1"
 
-  # Rule 3: Avoid panic in Application Code
-  - id: go-rule-3-avoid-panic
-    pattern: panic($X)
-    message: "Rule 3: Avoid using panic in application code. Return errors instead"
-    languages: [go]
-    severity: WARNING
-    metadata:
-      category: error-handling
-      rule: "Go Rule 3"
-
-  # Rule 6: Avoid Global Variables
-  - id: go-rule-6-global-var
-    pattern: var $GLOBAL $TYPE
-    message: "Rule 6: Avoid global variables. Use dependency injection or structs"
+  # Rule 5: Error Strings Naming
+  - id: go-rule-5-err-string-format
+    pattern: fmt.Errorf("$STR", ...)
+    metavariable-regex:
+      metavariable: $STR
+      regex: ^[A-Z]
+    message: "Rule 5: Error strings should not be capitalized or end with punctuation."
     languages: [go]
     severity: INFO
     metadata:
       category: best-practice
-      rule: "Go Rule 6"
 
-  # Rule 8: Do Not Use defer Inside Loops
-  - id: go-rule-8-defer-in-loop
-    pattern: |
-      for ... {
-        defer $FUNC(...)
-      }
-    message: "Rule 8: Do not use defer inside loops. Move defer outside or use a function"
-    languages: [go]
-    severity: ERROR
-    metadata:
-      category: resource-management
-      rule: "Go Rule 8"
+  # --- SECTION 3: CONCURRENCY & GOROUTINES ---
 
-  # Rule 10: Avoid Goroutine Leaks
-  - id: go-rule-10-goroutine-leak
-    pattern: |
-      go func() {
-        ...
-      }()
-    message: "Rule 10: Ensure goroutines can exit. Use context or done channels"
+  # Rule 6: Avoid Goroutine Leaks
+  - id: go-rule-6-goroutine-leak
+    pattern: go $FUNC(...)
+    message: "Rule 6: Ensure goroutines have a clear exit strategy or use a Context for cancellation."
     languages: [go]
     severity: WARNING
     metadata:
       category: concurrency
-      rule: "Go Rule 10"
 
-  # Rule 12: Avoid Empty Interface
-  - id: go-rule-12-empty-interface
-    pattern: func $FUNC($PARAM interface{})
-    message: "Rule 12: Avoid empty interface (interface{}). Use specific types or generics"
+  # Rule 7: Close Channels Properly
+  - id: go-rule-7-channel-close
+    pattern: close($CH)
+    message: "Rule 7: Only the sender should close a channel, never the receiver."
     languages: [go]
     severity: WARNING
-    metadata:
-      category: type-safety
-      rule: "Go Rule 12"
-
-  # Rule 13: Use Channels Safely
-  - id: go-rule-13-unclosed-channel
-    pattern: |
-      $CH := make(chan $TYPE)
-    message: "Rule 13: Ensure channels are properly closed to avoid goroutine leaks"
-    languages: [go]
-    severity: INFO
     metadata:
       category: concurrency
-      rule: "Go Rule 13"
 
-  # Rule 14: Avoid time.After in Loops
-  - id: go-rule-14-time-after-leak
-    pattern: |
-      for ... {
-        <-time.After(...)
-      }
-    message: "Rule 14: Avoid time.After in loops. Use time.NewTicker instead"
+  # --- SECTION 4: SLICES & MAPS ---
+
+  # Rule 8: Prefer make() with Capacity
+  - id: go-rule-8-slice-make
+    pattern: make([]$TYPE, 0)
+    message: "Rule 8: Specify capacity in make() if the final size is known to prevent re-allocations."
     languages: [go]
-    severity: ERROR
+    severity: INFO
     metadata:
-      category: memory-leak
-      rule: "Go Rule 14"
+      category: performance
 
-  # Rule 15: Use crypto/rand for Security
-  - id: go-rule-15-weak-random
-    pattern: rand.Read(...)
-    message: "Rule 15: Use crypto/rand for security-sensitive random numbers, not math/rand"
+  # Rule 9: Check Map Key Existence
+  - id: go-rule-9-map-existence
+    pattern: $VAL := $MAP[$KEY]
+    message: "Rule 9: Check if a key exists in a map using the 'comma ok' idiom: val, ok := map[key]."
     languages: [go]
     severity: WARNING
     metadata:
-      category: security
-      rule: "Go Rule 15"
+      category: best-practice
 
-  # Rule 19: Avoid SQL String Concatenation
-  - id: go-rule-19-sql-injection
-    pattern: $DB.Query("... " + $VAR + " ...")
-    message: "Rule 19: Avoid SQL string concatenation. Use parameterized queries"
+  # --- SECTION 5: SECURITY & PERFORMANCE ---
+
+  # Rule 10: Use Crypto/Rand for Secure Randoms
+  - id: go-rule-10-secure-math-rand
+    pattern: math/rand.$FUNC(...)
+    message: "Rule 10: Use 'crypto/rand' instead of 'math/rand' for security-sensitive operations."
     languages: [go]
     severity: ERROR
     metadata:
       category: security
-      cwe: CWE-89
-      rule: "Go Rule 19"
+      cwe: CWE-338
 
-  # Rule 18: Keep Functions Small and Focused
-  - id: go-rule-18-long-function
-    pattern: |
-      func $FUNC(...) ... {
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-        ...
-      }
-    message: "Rule 18: Keep functions small and focused. Break down large functions"
+  # Rule 11: Avoid Global Variables
+  - id: go-rule-11-no-global-vars
+    pattern: var $VAR $TYPE # (Top level)
+    message: "Rule 11: Avoid package-level global variables. Use dependency injection instead."
     languages: [go]
-    severity: INFO
+    severity: WARNING
     metadata:
       category: code-quality
-      rule: "Go Rule 18"
+
+  # Rule 12: Use defer for Resource Cleanup
+  - id: go-rule-12-defer-cleanup
+    pattern: |
+      $RES, _ := $OPEN(...)
+      ...
+      $RES.Close()
+    message: "Rule 12: Use 'defer res.Close()' immediately after checking for errors to ensure cleanup."
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: best-practice
+
+  # --- SECTION 6: QUALITY & STYLE ---
+
+  # Rule 13: Avoid long functions
+  - id: go-rule-13-long-funcs
+    pattern: |
+      func $F(...) {
+        ... # (Logic exceeding 60 lines)
+      }
+    message: "Rule 13: Keep functions concise. Break down functions exceeding 60 lines."
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: code-quality
+
+  # Rule 14: Use Guard Clauses
+  - id: go-rule-14-guard-clauses
+    pattern: if $COND { ... } else { return $ERR }
+    message: "Rule 14: Use guard clauses (early returns) to reduce indentation and nesting."
+    languages: [go]
+    severity: INFO
+    metadata:
+      category: readability
+
+  # Rule 15: Receiver Naming
+  - id: go-rule-15-receiver-name
+    pattern: func ($THIS $TYPE) $F(...)
+    metavariable-regex:
+      metavariable: $THIS
+      regex: (self|this)
+    message: "Rule 15: Avoid using 'self' or 'this' as receiver names. Use short, 1-3 letter names."
+    languages: [go]
+    severity: WARNING
+    metadata:
+      category: best-practice
